@@ -2,260 +2,288 @@
 
 # FamilyDesk
 
-O painel da família à porta de casa.
+The family's day, at a glance by the front door.
 <br clear="left">
 
-Dashboard para um **iPad 2** pendurado na entrada de casa. Mostra:
+**English** · [Português](README.pt.md)
 
-- relógio, data, frase do dia e o tempo agora (com nascer e pôr do sol);
-- faixa com as próximas horas e os próximos 6 dias; a vista ampliada tem UV, vento e rajadas, qualidade do ar, pólen e os 7 dias em detalhe; avisos do IPMA e dicas como "levar guarda-chuva" só aparecem quando há;
-- **agenda única dos próximos 30 dias**: calendários (iPhone, opcionalmente Outlook), eventos dos filhos, aniversários e prazos da casa, com scroll;
-- atividades da semana de cada filho, uma linha por atividade, com os dias e o que levar; escola de hoje e amanhã;
-- bloco **"🎒 Não esquecer"**: tudo o que vai na mochila, por filho (a partir das 18h, o de amanhã);
-- fotos da família a passar, trânsito em tempo real para os destinos do dia e as próximas datas da escola;
-- feriados e férias escolares automáticos: as atividades fazem pausa nesses dias;
-- área bancária, escondida por omissão;
-- modo noite com fotos aleatórias da família.
+That iPad 2 that has spent the last three years as a very expensive paperweight in the kitchen drawer? It has a job again — and this time it shows up on time, every day.
 
-Tudo se gere numa página web (`/gerir`) e é publicado como **calendário para subscrever no iPhone**.
+FamilyDesk is a wall dashboard for an old **iPad** (yes, even an iPad 2 stuck on iOS 9) hanging by the front door. It shows:
 
-**Página do projeto:** [fmrgcarvalho.github.io/familydesk](https://fmrgcarvalho.github.io/familydesk/) ([em português](https://fmrgcarvalho.github.io/familydesk/pt/)).
+- clock, date, quote of the day and the current weather (with sunrise and sunset);
+- a strip with the next few hours and the next 6 days; the expanded view adds UV, wind and gusts, air quality, pollen and 7 detailed days; IPMA weather warnings and hints such as "take an umbrella" only appear when they matter;
+- **one agenda for the next 30 days**: calendars (iPhone, optionally Outlook), the kids' events, birthdays and household deadlines, with scrolling;
+- each kid's activities for the week, one line per activity, with the days and what to bring; school today and tomorrow;
+- a **"🎒 Don't forget"** block: everything that goes in each kid's backpack (after 6 pm it switches to tomorrow);
+- family photos, live traffic to today's destinations and the next school dates;
+- automatic public holidays and school breaks: activities pause on those days;
+- a finances panel, hidden by default;
+- a night mode with random family photos.
+
+Everything is managed from a web page (`/gerir`) and published as a **calendar you can subscribe to on your iPhone**.
+
+**Project page:** [fmrgcarvalho.github.io/familydesk](https://fmrgcarvalho.github.io/familydesk/) ([in Portuguese](https://fmrgcarvalho.github.io/familydesk/pt/)).
 
 ![Dashboard](docs/dashboard-ipad.png)
 
-| Área bancária (ao tocar em 💶) | Página de gestão |
+| Finances (tap 💶) | Management page |
 |---|---|
-| ![Finanças](docs/dashboard-financas.png) | ![Gerir](docs/gerir.png) |
+| ![Finances](docs/dashboard-financas.png) | ![Manage](docs/gerir.png) |
 
-## Como funciona
+## Language
+
+The interface is available in **English** and **Portuguese**. Set `"idioma"` in `config.json`:
+
+```json
+"idioma": "en"
+```
+
+`"en"` (the default) or `"pt"`. It switches everything: the iPad dashboard, the iPhone page, the `/gerir` management page, server messages and the subscribed calendar. Restart the server after changing it.
+
+The configuration keys, the file names and the `/gerir` URL are in Portuguese (the project started life in a Portuguese hallway). Each key is explained in English in the [configuration table](#configuration-configjson).
+
+## How it works
 
 ```
- Outlook (ICS) ─┐                                          ┌──> iPad 2 (dashboard)
+ Outlook (ICS) ─┐                                          ┌──> iPad (dashboard)
  iCloud (ICS) ──┤                                          │
- Open-Meteo ────┼──>  server.js (PC / Raspberry Pi)  ──────┼──> PC / iPhone: /gerir (editar)
- IPMA avisos ───┘      + data/familia.json                 │
-                                                           └──> iPhone: /familia.ics (calendário subscrito)
+ Open-Meteo ────┼──>  server.js (PC / Raspberry Pi)  ──────┼──> PC / iPhone: /gerir (edit)
+ IPMA warnings ─┘      + data/familia.json                 │
+                                                           └──> iPhone: /familia.ics (subscribed calendar)
 ```
 
-O iPad 2 fica preso no iOS 9.3.5. Esse Safari não tem `fetch`, não suporta CSS Grid e já não confia em muitos certificados HTTPS atuais. Por isso:
+The iPad 2 is stuck on iOS 9.3.5. Its Safari has no `fetch`, no CSS Grid, and no longer trusts many current HTTPS certificates. So:
 
-- o **servidor** vai buscar tudo e entrega ao iPad num único pedido HTTP (`/api/dashboard`);
-- a **página do iPad** (`public/index.html` e `app.js`) está escrita em ES5 e usa só flexbox;
-- a **página de gestão** (`public/gerir.html`) usa JavaScript moderno, porque é aberta no PC ou no iPhone.
+- the **server** fetches everything and hands it to the iPad in a single HTTP request (`/api/dashboard`);
+- the **iPad page** (`public/index.html` and `app.js`) is written in ES5 and uses flexbox only;
+- the **management page** (`public/gerir.html`) uses modern JavaScript, because you open it on a PC or an iPhone.
 
-O servidor tem de estar sempre ligado na rede de casa. Pode ser este PC, um Raspberry Pi ou um NAS com Node.js.
+The server must stay on, on your home network. It can be your PC, a Raspberry Pi or a NAS with Node.js.
 
-## Abrir no iPhone e no iPad (rede de casa)
+## Install
 
-O servidor aceita ligações de qualquer aparelho ligado ao mesmo Wi-Fi.
-
-1. No PC, corre `npm start`. O terminal mostra o endereço, por exemplo `http://192.168.1.50:3000`.
-2. No iPhone ou no iPad, ligado ao Wi-Fi de casa, abre no Safari `http://192.168.1.50:3000`. Escreve `http://` e não `https://`.
-   - No **iPhone** abre sozinha a versão para telemóvel (`/iphone`).
-   - No **iPad** abre o dashboard de ecrã inteiro.
-   - Para gerir: `/gerir`.
-3. Para ficar como uma app: Partilhar → **Adicionar ao ecrã principal**. Fica com o ícone "Casa" e abre em ecrã inteiro.
-
-### Versão iPhone
-
-<img src="docs/iphone.png" width="300" align="right" alt="Versão iPhone">
-
-- A mesma informação do iPad, numa coluna com scroll: tempo agora, as próximas horas, 5 dias com barras de temperatura, contagens, avisos, agenda, atividades e aniversários.
-- Segue o **modo claro ou escuro** do iPhone.
-- A barra em baixo tem Resumo, Gerir, Calendário e Atualizar. Os dados atualizam ao voltar à app e a cada 5 minutos.
-- As **finanças** aparecem desfocadas até tocares em "Mostrar" e voltam a esconder-se ao fim de 60 segundos ou quando sais da app.
-- Para ver a versão do iPad no telemóvel, usa `/#ipad`.
-
-<br clear="right">
-
-**Se não abrir**, é quase sempre a firewall do Windows. Corre isto uma vez no PowerShell **como administrador**:
-
-```powershell
-New-NetFirewallRule -DisplayName "FamilyDesk" -Direction Inbound -Protocol TCP -LocalPort 3000 -Action Allow -Profile Private,Public
-```
-
-**Para não deixar de funcionar:**
-- **IP fixo:** no router, cria uma *reserva DHCP* para o PC. Se o IP mudar, os links do iPhone e do iPad deixam de funcionar.
-- **PC sem suspensão:** Definições → Sistema → Energia → Suspender: *Nunca* (pelo menos quando ligado à corrente).
-- **Arranque automático:** a tarefa agendada **FamilyDesk** (Agendador de Tarefas do Windows) corre `arrancar.cmd` ao iniciar sessão, sem janela. O `arrancar.cmd` volta a arrancar o servidor 5 segundos depois se ele parar. Para reiniciar à mão: termina o `node.exe` no Gestor de Tarefas e ele volta sozinho. Também podes passar o servidor para um Raspberry Pi.
-
-## Instalação
+You need [Node.js 18 or later](https://nodejs.org).
 
 ```bash
+git clone https://github.com/fmrgcarvalho/familydesk.git
+cd familydesk
 npm install
 cp config.example.json config.json
 npm start
 ```
 
-O terminal mostra os endereços:
+The terminal shows the addresses:
 
 ```
   iPad:    http://192.168.1.50:3000
   Gerir:   http://localhost:3000/gerir
 ```
 
-Para ver a agenda com compromissos de exemplo: `DEMO=1 npm start` (PowerShell: `$env:DEMO=1; npm start`).
+To see the agenda filled with sample appointments: `DEMO=1 npm start` (PowerShell: `$env:DEMO=1; npm start`).
 
-## Gerir a família — `/gerir`
+## Opening it on the iPhone and iPad (home network)
 
-| Separador | O que tem |
-|---|---|
-| Consultas e eventos | Consultas 🩺, escola 🏫 e eventos 🎈 com data, hora e local. Aparecem na agenda do dashboard com a cor de cada filho. |
-| Atividades semanais | Natação, futebol, etc., com o dia da semana, a hora e o que levar 🎒 |
-| Aniversários | Colegas de cada filho. Com o ano de nascimento, mostra a idade que vai fazer. |
-| Filhos | Nome, cor e nível de ensino. Ao mudar um nome, todas as entradas são atualizadas. |
-| 💶 Contas / 💸 Pagamentos | Saldos e pagamentos mensais, como renda, colégio ou luz |
-| 📅 Escola e feriados | Calendário escolar, fim das aulas por nível e próximos feriados |
-| 🌙 Modo noite | Estado da pasta de fotos e pré-visualização |
-| 📱 Calendário no iPhone | Links para subscrever |
+The server accepts connections from any device on the same Wi-Fi.
 
-Os dados ficam em `data/familia.json`. Se o ficheiro não existir, é criado na primeira gravação. Para proteger as alterações com um PIN, preenche `pinGestao` no `config.json`.
+1. On the PC, run `npm start`. The terminal shows the address, for example `http://192.168.1.50:3000`.
+2. On the iPhone or iPad, on the home Wi-Fi, open `http://192.168.1.50:3000` in Safari. Type `http://`, not `https://`.
+   - The **iPhone** gets the phone version (`/iphone`) automatically.
+   - The **iPad** gets the full-screen dashboard.
+   - To manage everything: `/gerir`.
+3. To make it feel like an app: Share → **Add to Home Screen**. It gets a "Home" icon and opens full screen.
 
-## Calendário no iPhone
+### iPhone version
 
-O servidor publica `http://<ip>:3000/familia.ics`, ou `familia.ics?quem=Maria` para um filho só, com:
+<img src="docs/iphone.png" width="300" align="right" alt="iPhone version">
 
-- atividades semanais como eventos que se repetem;
-- consultas e eventos, com alerta na véspera para as consultas;
-- aniversários como eventos anuais;
-- feriados e férias escolares.
+- The same information as the iPad, in one scrolling column: current weather, the next hours, 5 days with temperature bars, countdowns, warnings, agenda, activities and birthdays.
+- Follows the iPhone's **light or dark mode**.
+- The bottom bar has Summary, Manage, Calendar and Refresh. Data refreshes when you come back to the app and every 5 minutes.
+- **Finances** stay blurred until you tap "Show", and hide again after 60 seconds or when you leave the app.
+- To see the iPad version on the phone, use `/#ipad`.
 
-No iPhone, abre `/gerir` → **Calendário no iPhone** → **Subscrever**. Em alternativa: Definições → Calendário → Contas → Adicionar conta → Outra → *Adicionar calendário subscrito*. Escolhe a conta iCloud para o calendário aparecer em todos os teus dispositivos. Repete no iPhone de cada pessoa da família.
+<br clear="right">
 
-> ⚠️ O link só funciona dentro da rede de casa. Fora de casa o iPhone continua a mostrar o que já tinha e atualiza quando voltas. Para funcionar em qualquer lado, expõe o servidor com [Tailscale](https://tailscale.com) (privado, recomendado) ou com um Cloudflare Tunnel.
+**If it doesn't open**, it is almost always the Windows firewall. Run this once in PowerShell **as administrator**:
 
-## Feriados e férias escolares
-
-- **Feriados nacionais** são calculados automaticamente, incluindo a Páscoa, a Sexta-feira Santa e o Corpo de Deus. O **feriado municipal** define-se em `feriadoMunicipal` no `config.json`, com data fixa (`"06-13"`) ou móvel (`"pascoa+39"` para a Quinta-feira da Ascensão).
-- **Calendário escolar por filho.** Em `/gerir` → Filhos escolhes o calendário de cada um:
-  - **Nacional**, em `data/calendario-escolar.json`;
-  - o do **agrupamento**, para escolas com semestres, pausas de avaliação ou um Natal diferente. Fica em `data/calendario-escolar.local.json`, que não vai para o GitHub porque revela a escola;
-  - **Creche**: só feriados, porque as creches não param nas férias escolares.
-- **Calendário nacional** de Portugal continental em `data/calendario-escolar.json`. O ano 2026/27 já está preenchido. Acrescenta o ano seguinte quando sair o despacho, normalmente em junho ou julho.
-- Em `/gerir` → Filhos, indica o **nível de ensino** de cada filho. O fim das aulas varia: o 9.º, o 11.º e o 12.º ano acabam a 4 de junho, do 5.º ao 8.º e o 10.º a 11 de junho, e o pré-escolar e o 1.º ciclo a 30 de junho.
-- As atividades com **"Pausa em férias e feriados"** (ativo por omissão) desaparecem do dashboard nesses dias e ficam como exceção no calendário do iPhone. Desliga a opção nas que continuam nas férias, como a natação no clube.
-- O dashboard mostra as **próximas 3 datas** numa linha no fundo da coluna da direita: "Dia de Todos os Santos em 21 dias · Férias de Natal em 66 dias…". No iPhone continuam as contagens completas, com os aniversários da família.
-- A agenda e o calendário do iPhone mostram os feriados 🇵🇹 e as férias 🎄🎭🐣.
-
-![Escola e feriados](docs/gerir-escola.png)
-
-## Horários da turma
-
-Em `/gerir` → 🕘 Horários há uma grelha por filho: tempos (aula, AEC, intervalo, almoço) × segunda a sexta, mais "o que levar" por disciplina (ex.: Educação Física → equipamento de judo).
-
-- **Dashboard (Hoje e Amanhã):** "🏫 Escola até 15:30 · AEC AFD até 17:15 · 🎒 equipamento de judo".
-- **iPhone:** cartão com o horário completo do dia e a aula atual destacada. Se hoje não houver aulas, mostra o próximo dia com aulas.
-- Em feriados e férias, de acordo com o calendário escolar de cada filho, a escola não aparece.
-
-## Prazos da casa
-
-IUC, inspeção, seguros, revisão do carro, Cartão de Cidadão, passaporte, dentista, IRS… Em `/gerir` → 📋 Prazos há **modelos de um toque**: escolhes o modelo e só falta a data.
-
-- Cada prazo tem data, repetição (mensal, de 6 em 6 meses, anual, de 2, 5 ou 10 anos) e com quantos dias de antecedência aparece (30 por omissão).
-- **iPad:** dentro da agenda, no dia certo, quando faltam 30 dias ou menos (a laranja nos últimos 7). Os atrasados aparecem a vermelho no topo da agenda, em "Atrasados".
-- **iPhone:** cartão 📋 Prazos com **✓ Feito**. Se o prazo se repete, passa para a próxima data; se não, fica arquivado.
-- **Calendário do iPhone:** os prazos entram como eventos com alerta na antecedência escolhida e na véspera.
-
-## Trânsito
-
-Tempo de viagem de **casa** para cada destino, atualizado a cada 5 minutos entre as 06:00 e as 23:00 (configurável).
-
-- **iPad:** lista no fundo da coluna da direita, um destino por linha. Verde quer dizer normal, laranja trânsito acentuado (10–30% acima do normal) e vermelho engarrafamento (mais de 30%), com "+N" minutos de atraso. O ecrã principal mostra os destinos de hoje (opção "Mostrar" de cada destino: sempre, dias úteis ou fim de semana); a vista ampliada mostra todos, com km e tempo normal.
-- **iPhone:** cartão com distância, hora de chegada e atraso. Tocar num destino abre o Google Maps com o caminho.
-- **`/gerir` → 🚗 Trânsito:** cola o link do Google Maps da casa e de cada destino. Os links curtos (`maps.app.goo.gl`) também funcionam.
-
-**Trânsito em tempo real (grátis):** cria uma conta em [developer.tomtom.com](https://developer.tomtom.com), copia a *API Key* e cola-a em `transito.tomtomChave` no `config.json`. O plano gratuito dá 2500 pedidos por dia, e 6 destinos a cada 5 minutos gastam cerca de 1700. Sem chave, os tempos vêm do OSRM e são **sem trânsito**.
-
-| `config.json` → `transito` | |
-|---|---|
-| `tomtomChave` | chave da TomTom |
-| `intervaloMinutos` | 5 |
-| `horaInicio` / `horaFim` | horário em que se atualiza (fora dele fica o último valor) |
-
-## Fotos no ecrã
-
-Na coluna da direita, entre as atividades e o trânsito, passam fotos de uma pasta, a **trocar de 10 em 10 segundos** (configurável). A foto ocupa o espaço que sobra. As fotos ao alto aparecem inteiras, com fundo escuro dos lados; as deitadas enchem a moldura. Tocar na foto mostra-a em ecrã inteiro. Com as finanças abertas, a foto esconde-se.
-
-```json
-"agendaFotos": { "pasta": "C:\\Fotos\\Dashboard", "intervaloSegundos": 10 }
+```powershell
+New-NetFirewallRule -DisplayName "FamilyDesk" -Direction Inbound -Protocol TCP -LocalPort 3000 -Action Allow -Profile Private,Public
 ```
 
-Aceita JPG, PNG, WEBP e **HEIC** (fotos do iPhone, convertidas automaticamente). O servidor reduz cada foto para 1024 px e guarda-a em cache. Basta pôr ou tirar fotos da pasta, porque a lista é relida a cada 30 minutos. A pasta pode ser uma pasta sincronizada pelo Google Drive para computador.
+**To keep it working:**
+- **Fixed IP:** create a *DHCP reservation* for the PC in your router. If the IP changes, the links on the iPhone and iPad stop working.
+- **No sleep:** Settings → System → Power → Sleep: *Never* (at least when plugged in).
+- **Start automatically:** create a Windows Task Scheduler task that runs `arrancar.cmd` at logon. `arrancar.cmd` restarts the server 5 seconds after it stops, so to restart it by hand just end `node.exe` in Task Manager and it comes back on its own. You can also move the server to a Raspberry Pi.
 
-## Modo noite com fotos
+## Managing the family — `/gerir`
 
-Entre as 22h e as 7h (configurável), o iPad mostra **fotos aleatórias da família** com o relógio no canto, em vez de só escurecer. Tocar no ecrã mostra o dashboard durante 2 minutos. O servidor reduz cada foto para 1024 px antes de a enviar, porque o iPad 2 tem pouca memória, e guarda-as em `cache/fotos`.
+| Tab | What's in it |
+|---|---|
+| Appointments and events | Doctor 🩺, school 🏫 and other events 🎈 with date, time and place. They show up in the dashboard agenda in each kid's colour. |
+| Weekly activities | Swimming, football, etc., with the weekday, time and what to bring 🎒 |
+| Birthdays | Each kid's classmates. With a birth year, it shows the age they're turning. |
+| Kids | Name, colour and school level. Renaming a kid updates every entry. |
+| 💶 Accounts / 💸 Payments | Balances and monthly payments such as rent, school fees or electricity |
+| 📅 School and holidays | School calendar, last day of classes per level and upcoming holidays |
+| 🌙 Night mode | Photo folder status and preview |
+| 📱 iPhone calendar | Links to subscribe |
 
-Há duas formas de ir buscar as fotos a uma pasta do Google Drive.
+Data is stored in `data/familia.json`. If the file doesn't exist, it is created on the first save. To protect changes with a PIN, fill in `pinGestao` in `config.json`.
 
-**A) Google Drive para computador (mais simples).** Instala o [Google Drive para computador](https://www.google.com/drive/download/) no PC do servidor e aponta para a pasta sincronizada:
+## iPhone calendar
+
+The server publishes `http://<ip>:3000/familia.ics`, or `familia.ics?quem=Maria` for a single kid, with:
+
+- weekly activities as recurring events;
+- appointments and events, with an alert the day before for doctor appointments;
+- birthdays as yearly events;
+- public holidays and school breaks.
+
+On the iPhone, open `/gerir` → **iPhone calendar** → **Subscribe**. Or: Settings → Calendar → Accounts → Add Account → Other → *Add Subscribed Calendar*. Pick the iCloud account so the calendar appears on all your devices. Repeat on each family member's iPhone.
+
+> ⚠️ The link only works inside your home network. Away from home, the iPhone keeps showing what it already had and updates when you get back. To make it work anywhere, expose the server with [Tailscale](https://tailscale.com) (private, recommended) or a Cloudflare Tunnel.
+
+## Public holidays and school breaks
+
+The holidays and school calendars are Portugal's (mainland). Other countries are welcome as contributions.
+
+- **National holidays** are calculated automatically, including Easter, Good Friday and Corpus Christi. Your **municipal holiday** goes in `feriadoMunicipal` in `config.json`, either with a fixed date (`"06-13"`) or relative to Easter (`"pascoa+39"` for Ascension Thursday).
+- **School calendar per kid.** In `/gerir` → Kids, choose each kid's calendar:
+  - **National**, in `data/calendario-escolar.json`;
+  - the **school cluster's** own calendar, for schools with semesters, assessment breaks or a different Christmas break. It lives in `data/calendario-escolar.local.json`, which is not pushed to GitHub because it gives away the school;
+  - **Nursery**: holidays only, because nurseries don't close for school breaks.
+- The **national calendar** for mainland Portugal is in `data/calendario-escolar.json`. 2026/27 is already filled in. Add the next year when the official dispatch comes out, usually in June or July.
+- In `/gerir` → Kids, set each kid's **school level**. The last day of classes varies: years 9, 11 and 12 finish on 4 June, years 5 to 8 and 10 on 11 June, and pre-school and years 1 to 4 on 30 June.
+- Activities with **"Pause during breaks and holidays"** (on by default) disappear from the dashboard on those days and become exceptions in the iPhone calendar. Turn it off for activities that carry on during breaks, like swimming at the club.
+- The dashboard shows the **next 3 dates** on one line at the bottom of the right column: "All Saints' Day in 21 days · Christmas break in 66 days…". The iPhone keeps the full countdowns, including family birthdays.
+- The agenda and the iPhone calendar show holidays 🇵🇹 and school breaks 🎄🎭🐣.
+
+![School and holidays](docs/gerir-escola.png)
+
+## Class timetables
+
+In `/gerir` → 🕘 Timetables there is a grid per kid: periods (class, after-school activity, break, lunch) × Monday to Friday, plus "what to bring" per subject (e.g. PE → judo kit).
+
+- **Dashboard (Today and Tomorrow):** "🏫 School until 15:30 · after-school sport until 17:15 · 🎒 judo kit".
+- **iPhone:** a card with the full timetable for the day and the current class highlighted. If there's no school today, it shows the next school day.
+- On holidays and breaks, following each kid's school calendar, school doesn't appear.
+
+## Household deadlines
+
+Car tax, MOT, insurance, car service, ID card, passport, dentist, tax return… In `/gerir` → 📋 Deadlines there are **one-tap templates**: pick one and just add the date.
+
+- Each deadline has a date, a repeat (monthly, every 6 months, yearly, every 2, 5 or 10 years) and how many days ahead it shows up (30 by default).
+- **iPad:** in the agenda, on the right day, once it's 30 days away or less (orange in the last 7). Overdue ones appear in red at the top of the agenda, under "Overdue".
+- **iPhone:** a 📋 Deadlines card with **✓ Done**. If it repeats, it moves to the next date; if not, it's archived.
+- **iPhone calendar:** deadlines become events with an alert at the chosen lead time and on the day before.
+
+## Traffic
+
+Travel time from **home** to each destination, updated every 5 minutes between 06:00 and 23:00 (configurable).
+
+- **iPad:** a list at the bottom of the right column, one destination per line. Green means normal, orange heavy traffic (10–30% above normal) and red a jam (over 30%), with "+N" minutes of delay. The main screen shows today's destinations (each destination's "Show" option: always, weekdays or weekends); the expanded view shows them all, with km and normal time.
+- **iPhone:** a card with distance, arrival time and delay. Tapping a destination opens Google Maps with the route.
+- **`/gerir` → 🚗 Traffic:** paste the Google Maps link for home and for each destination. Short links (`maps.app.goo.gl`) work too.
+
+**Live traffic (free):** create an account at [developer.tomtom.com](https://developer.tomtom.com), copy the *API Key* and paste it into `transito.tomtomChave` in `config.json`. The free plan gives 2,500 requests a day; 6 destinations every 5 minutes use about 1,700. Without a key, times come from OSRM and **don't include traffic**.
+
+| `config.json` → `transito` (traffic) | |
+|---|---|
+| `tomtomChave` | TomTom API key |
+| `intervaloMinutos` | refresh interval in minutes (5) |
+| `horaInicio` / `horaFim` | start / end of the hours when it refreshes (outside them the last value stays) |
+
+## Photos on screen
+
+In the right column, between the activities and the traffic, photos from a folder **change every 10 seconds** (configurable). The photo fills the remaining space. Portrait photos are shown whole, with a dark background on the sides; landscape ones fill the frame. Tap a photo to see it full screen. While finances are open, the photo hides.
+
+```json
+"agendaFotos": { "pasta": "C:\\Photos\\Dashboard", "intervaloSegundos": 10 }
+```
+
+`pasta` is the folder, `intervaloSegundos` the seconds per photo. It accepts JPG, PNG, WEBP and **HEIC** (iPhone photos, converted automatically). The server shrinks each photo to 1024 px and caches it. Just add or remove photos in the folder — the list is re-read every 30 minutes. The folder can be one synced by Google Drive for desktop.
+
+## Night mode with photos
+
+Between 22:00 and 07:00 (configurable), instead of just dimming, the iPad shows **random family photos** with the clock in the corner. Tapping the screen shows the dashboard for 2 minutes. The server shrinks each photo to 1024 px before sending it, because the iPad 2 has very little memory, and keeps them in `cache/fotos`.
+
+There are two ways to get the photos from a Google Drive folder.
+
+**A) Google Drive for desktop (simplest).** Install [Google Drive for desktop](https://www.google.com/drive/download/) on the server PC and point to the synced folder:
 
 ```json
 "modoNoite": { "inicio": "22:00", "fim": "07:00", "intervaloSegundos": 60,
-  "fotos": { "pasta": "G:\\O meu disco\\Fotos dashboard" } }
+  "fotos": { "pasta": "G:\\My Drive\\Dashboard photos" } }
 ```
 
-Lê JPG, PNG e WEBP, até 3 níveis de subpastas. As fotos HEIC do iPhone não são lidas por este caminho. Exporta-as como JPG, ou no iPhone ativa Definições → Câmara → Formatos → *Mais compatível*.
+It reads JPG, PNG and WEBP, up to 3 levels of subfolders. iPhone HEIC photos are not read this way. Export them as JPG, or on the iPhone set Settings → Camera → Formats → *Most Compatible*.
 
-**B) Diretamente do Google Drive (a pasta continua privada).**
-1. Em [console.cloud.google.com](https://console.cloud.google.com): cria um projeto → *APIs e serviços* → ativa a **Google Drive API**.
-2. *Credenciais* → **Criar conta de serviço** → *Chaves* → Adicionar chave → JSON. Guarda o ficheiro como `google-service-account.json` nesta pasta. Já está no `.gitignore`.
-3. No Google Drive, **partilha a pasta das fotos** com o e-mail da conta de serviço (`…@….iam.gserviceaccount.com`), como Leitor.
-4. Copia o ID da pasta, que é a parte final do URL `drive.google.com/drive/folders/<ID>`:
+**B) Straight from Google Drive (the folder stays private).**
+1. At [console.cloud.google.com](https://console.cloud.google.com): create a project → *APIs & Services* → enable the **Google Drive API**.
+2. *Credentials* → **Create service account** → *Keys* → Add key → JSON. Save the file as `google-service-account.json` in the project folder. It is already in `.gitignore`.
+3. In Google Drive, **share the photo folder** with the service account's e-mail (`…@….iam.gserviceaccount.com`) as Viewer.
+4. Copy the folder ID, the last part of the URL `drive.google.com/drive/folders/<ID>`:
 
 ```json
 "fotos": { "googleDrive": { "pastaId": "<ID>", "contaServico": "google-service-account.json" } }
 ```
 
-Este caminho também mostra as fotos HEIC, através das miniaturas do Drive. Para verificar se está tudo bem, abre `/gerir` → 🌙 Modo noite (mostra quantas fotos encontrou) ou pré-visualiza com `http://<ip>:3000/#noite`.
+This way also shows HEIC photos, through Drive's thumbnails. To check everything works, open `/gerir` → 🌙 Night mode (it shows how many photos it found) or preview at `http://<ip>:3000/#noite`.
 
-## Área bancária
+## Finances
 
-- Liga e desliga em `/gerir` → 💶 Contas → "Mostrar a área bancária no dashboard". Quando está desligada, os valores nem sequer são enviados para o iPad.
-- Quando está ligada, aparece um 💶 discreto no canto inferior esquerdo do iPad. Ao tocar, os saldos e os próximos pagamentos aparecem durante 60 segundos e depois escondem-se sozinhos.
-- Os saldos são atualizados à mão. Ligar diretamente ao banco exige um agregador PSD2, porque os bancos portugueses não dão acesso direto.
+- Turn it on or off in `/gerir` → 💶 Accounts → "Show the finances panel on the dashboard". When it's off, the numbers are not even sent to the iPad.
+- When it's on, a discreet 💶 appears in the bottom-left corner of the iPad. Tap it and balances and upcoming payments appear for 60 seconds, then hide on their own.
+- Balances are updated by hand. Connecting straight to a bank needs a PSD2 aggregator, because Portuguese banks don't offer direct access.
 
-## Configuração (`config.json`)
+## Configuration (`config.json`)
 
-| Campo | Para que serve |
-|---|---|
-| `local` | Nome e coordenadas para a meteorologia |
-| `ipmaArea` | Distrito para os avisos do IPMA (`LSB` Lisboa, `PTO` Porto, `STB` Setúbal, `FAR` Faro, `CBR` Coimbra, `BRG` Braga, …). Vazio desliga os avisos. |
-| `fusoHorario` | Por omissão `Europe/Lisbon` |
-| `diasAniversarios` | Aniversários dos colegas nos próximos N dias (30) |
-| `diasAgenda` | Dias mostrados na agenda (30) |
-| `diasContagemFamilia` | No iPhone, contagem para os aniversários da família a partir de N dias antes (120; os filhos sempre) |
-| `ecra` | Afinações do ecrã, todas opcionais: `atualizarMinutos` (2), `recarregarHoras` (6), `fecharPainelSegundos` (60), `fecharFotoMinutos` (10), `fecharMenuSegundos` (20), `financasSegundos` (60), `acordadoNoiteMinutos` (2), `mochilaAmanhaAPartirDas` (18), `datasEscolaMax` (3) |
-| `pinGestao` | PIN para gravar alterações em `/gerir` (pedido uma vez e guardado nesse browser) |
-| `feriadoMunicipal` | `{ "nome": "Santo António", "data": "06-13" }`. No Porto, por exemplo, seria `06-24`. |
-| `modoNoite` | Horário, segundos por foto e origem das fotos (ver acima) |
-| `calendarios` | Lista de `{ nome, cor, url }` com links ICS |
+The keys are in Portuguese; the second column says what each one means.
 
-`config.json` e `data/familia.json` estão no `.gitignore`, porque têm links privados, nomes e valores.
+| Key | Meaning | What it does |
+|---|---|---|
+| `idioma` | language | `"en"` (default) or `"pt"`. Switches the whole interface and the subscribed calendar. |
+| `porta` | port | HTTP port (3000) |
+| `local` | location | Name and coordinates (`nome`, `latitude`, `longitude`) for the weather |
+| `ipmaArea` | IPMA area | District for IPMA weather warnings (`LSB` Lisbon, `PTO` Porto, `STB` Setúbal, `FAR` Faro, `CBR` Coimbra, `BRG` Braga, …). Empty turns warnings off. |
+| `fusoHorario` | time zone | `Europe/Lisbon` by default |
+| `diasAniversarios` | birthday days | Classmates' birthdays in the next N days (30) |
+| `diasAgenda` | agenda days | Days shown in the agenda (30) |
+| `diasContagemFamilia` | family countdown days | On the iPhone, countdown to family birthdays starting N days before (120; always for the kids) |
+| `ecra` | screen | Screen fine-tuning, all optional: `atualizarMinutos` refresh minutes (2), `recarregarHoras` full reload hours (6), `fecharPainelSegundos` close expanded panel after seconds (60), `fecharFotoMinutos` close full-screen photo after minutes (10), `fecharMenuSegundos` hide menu after seconds (20), `financasSegundos` show finances for seconds (60), `acordadoNoiteMinutos` stay awake at night after a tap, minutes (2), `mochilaAmanhaAPartirDas` switch "Don't forget" to tomorrow from this hour (18), `datasEscolaMax` max school dates shown (3) |
+| `pinGestao` | management PIN | PIN to save changes in `/gerir` (asked once and remembered in that browser) |
+| `feriadoMunicipal` | municipal holiday | `{ "nome": "Santo António", "data": "06-13" }`. In Porto, for example, it would be `06-24`. |
+| `calendarios` | calendars | List of `{ nome, cor, url }` (name, colour, ICS link) |
+| `modoNoite` | night mode | Hours (`inicio`/`fim`), seconds per photo and photo source (see above) |
+| `agendaFotos` | dashboard photos | Photo folder and seconds per photo (see above) |
+| `transito` | traffic | TomTom key and refresh hours (see above) |
 
-### Link ICS do Outlook
+`config.json` and `data/familia.json` are in `.gitignore`, because they hold private links, names and amounts.
 
-Outlook na web: Definições ⚙️ → Calendário → Calendários partilhados → *Publicar um calendário* → "Pode ver todos os detalhes" → Publicar → copia o link **ICS**. Se for uma conta da empresa e a opção não aparecer, o administrador bloqueou a publicação.
+### Outlook ICS link
 
-### Link do calendário do iPhone (iCloud)
+Outlook on the web: Settings ⚙️ → Calendar → Shared calendars → *Publish a calendar* → "Can view all details" → Publish → copy the **ICS** link. If it's a work account and the option isn't there, your administrator has blocked publishing.
 
-App Calendário → **Calendários** → ⓘ ao lado do calendário → ativa **Calendário público** → copia o link `webcal://` e cola-o tal como está. Quem tiver o link consegue ver o calendário, por isso não o publiques.
+### iPhone calendar link (iCloud)
 
-## Preparar o iPad 2
+Calendar app → **Calendars** → ⓘ next to the calendar → turn on **Public Calendar** → copy the `webcal://` link and paste it as is. Anyone with the link can see the calendar, so don't share it.
 
-1. No Safari, abre `http://<ip-do-servidor>:3000` → Partilhar → **Adicionar ao ecrã principal**.
-2. Definições → Ecrã e brilho → **Bloqueio automático: Nunca**.
-3. Definições → Geral → Acessibilidade → **Acesso guiado** para prender o iPad na app.
-4. Dá um IP fixo ao servidor no router.
+## Setting up the iPad
 
-**Barra de menu (iPad):** fica escondida para dar espaço. O botão **☰** no canto inferior esquerdo mostra-a; volta a esconder-se 20 segundos depois do último toque. Botões: 📅 Agenda · 🎒 Atividades · ⛅️ Tempo · 🚗 Trânsito · 📷 Fotos (ecrã inteiro) · 💶 Finanças (se ativa) · ✏️ Gerir (escondido no Safari do iPad 2, que não abre o /gerir) · 🔄 Atualizar.
+1. In Safari, open `http://<server-ip>:3000` → Share → **Add to Home Screen**.
+2. Settings → Display & Brightness → **Auto-Lock: Never**.
+3. Settings → General → Accessibility → **Guided Access** to lock the iPad into the app.
+4. Give the server a fixed IP in your router.
 
-**Frase do dia:** entre o relógio e o tempo aparece uma frase inspiracional nova todos os dias, da [ZenQuotes](https://zenquotes.io), traduzida pela MyMemory. As duas são gratuitas. É pedida uma vez por dia. Se as APIs falharem, usa uma lista de frases em português.
+**Menu bar (iPad):** hidden to save space. The **☰** button in the bottom-left corner shows it; it hides again 20 seconds after the last tap. Buttons: 📅 Agenda · 🎒 Activities · ⛅️ Weather · 🚗 Traffic · 📷 Photos (full screen) · 💶 Finances (if enabled) · ✏️ Manage (hidden on the iPad 2's Safari, which can't open `/gerir`) · 🔄 Refresh.
 
-**Ampliar painéis:** tocar num painel (agenda, atividades, trânsito, finanças ou faixa do tempo) abre-o em ecrã inteiro, com letra maior, todo o conteúdo e mais detalhe. Tocar outra vez volta ao normal. Se ninguém mexer, fecha sozinho ao fim de 60 segundos. Para pré-visualizar no PC: `/#expandir=painel-transito`.
+**Quote of the day:** between the clock and the weather there's a new inspirational quote every day, from [ZenQuotes](https://zenquotes.io); in Portuguese it is translated with MyMemory. Both are free. It's fetched once a day. If the APIs fail, a built-in list of quotes is used.
 
-A página atualiza os dados a cada 2 minutos e recarrega-se sozinha quando o servidor é reiniciado ou quando os ficheiros da página (`index.html`, `app.js`, `comum.js`, `style.css`) mudam. Também recarrega a cada 6 horas, por segurança. À noite mostra as fotos da família ou, se não houver fotos configuradas, fica só mais escura.
+**Expanding panels:** tap a panel (agenda, activities, traffic, finances or the weather strip) to open it full screen, with bigger text, all the content and more detail. Tap again to go back. If nobody touches it, it closes after 60 seconds. To preview on the PC: `/#expandir=painel-transito`.
 
-## Licença
+The page refreshes its data every 2 minutes and reloads itself when the server restarts or when the page files (`index.html`, `app.js`, `comum.js`, `style.css`) change. It also reloads every 6 hours, just in case. At night it shows family photos or, if none are configured, simply dims.
 
-[MIT](LICENSE): podes usar, alterar e distribuir livremente, mantendo o aviso de copyright.
+## Licence
+
+[MIT](LICENSE): you can use, change and share it freely, as long as you keep the copyright notice.

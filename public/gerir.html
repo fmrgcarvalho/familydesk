@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="FamilyDesk">
 <link rel="apple-touch-icon" href="icone.png">
+<script src="idioma.js"></script>
 <title>FamilyDesk · Gerir</title>
 <style>
   * { box-sizing: border-box; }
@@ -69,42 +70,58 @@
 </head>
 <body>
 <header>
-  <h1><img src="icone.png" alt="" style="width:30px;height:30px;border-radius:8px;vertical-align:-6px;margin-right:6px">FamilyDesk <span style="font-weight:400;color:#8b949e">· Gerir</span></h1>
-  <a href="/">← Dashboard</a>
+  <h1><img src="icone.png" alt="" style="width:30px;height:30px;border-radius:8px;vertical-align:-6px;margin-right:6px">FamilyDesk <span id="h-gerir" style="font-weight:400;color:#8b949e">· Gerir</span></h1>
+  <a id="h-dashboard" href="/">← Dashboard</a>
 </header>
 <nav id="tabs"></nav>
 <main id="conteudo"></main>
 <div id="aviso"></div>
 
 <script>
+const EN = window.IDIOMA !== 'pt';
+const L = (pt, en) => (EN && en != null ? en : pt);
+const LOCALE = EN ? 'en-US' : 'pt-PT';
+
+// Texto estático da página
+document.documentElement.lang = EN ? 'en' : 'pt-PT';
+document.title = 'FamilyDesk · ' + L('Gerir', 'Manage');
+document.getElementById('h-gerir').textContent = '· ' + L('Gerir', 'Manage');
+document.getElementById('h-dashboard').textContent = '← Dashboard';
+
+// Valores guardados (não traduzir) e nomes mostrados
 const DIAS = ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
-const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-const TIPOS_EVENTO = { consulta: '🏥 Consulta', escola: '🏫 Escola', evento: '🎈 Evento', outro: '📌 Outro' };
-const NIVEIS = { '': '—', creche: 'Creche', pre: 'Pré-escolar', '1ciclo': '1.º ciclo (1.º–4.º)', '2ciclo': '2.º ciclo (5.º–6.º)', '3ciclo': '7.º–8.º ano', '9ano': '9.º ano', '10ano': '10.º ano', secundario: '11.º–12.º ano' };
-const CATEGORIAS = { carro: '🚗 Carro', casa: '🏠 Casa', saude: '🏥 Saúde', documentos: '📄 Documentos', escola: '🏫 Escola', dinheiro: '💶 Finanças', outro: '📌 Outro' };
-const REPETIR = { '0': 'Não repete', '1': 'Todos os meses', '3': 'De 3 em 3 meses', '6': 'De 6 em 6 meses', '12': 'Todos os anos', '24': 'De 2 em 2 anos', '60': 'De 5 em 5 anos', '120': 'De 10 em 10 anos' };
+const NOMES_DIAS = Object.fromEntries(DIAS.map((d, i) => [d, L(d, ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][i])]));
+const MESES = L(['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'],
+  ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']);
+const TIPOS_EVENTO = { consulta: L('🏥 Consulta', '🏥 Appointment'), escola: L('🏫 Escola', '🏫 School'), evento: L('🎈 Evento', '🎈 Event'), outro: L('📌 Outro', '📌 Other') };
+const NIVEIS = { '': '—', creche: L('Creche', 'Nursery'), pre: L('Pré-escolar', 'Preschool'), '1ciclo': L('1.º ciclo (1.º–4.º)', '1st cycle (grades 1–4)'), '2ciclo': L('2.º ciclo (5.º–6.º)', '2nd cycle (grades 5–6)'), '3ciclo': L('7.º–8.º ano', 'Grades 7–8'), '9ano': L('9.º ano', 'Grade 9'), '10ano': L('10.º ano', 'Grade 10'), secundario: L('11.º–12.º ano', 'Grades 11–12') };
+const CATEGORIAS = { carro: L('🚗 Carro', '🚗 Car'), casa: L('🏠 Casa', '🏠 Home'), saude: L('🏥 Saúde', '🏥 Health'), documentos: L('📄 Documentos', '📄 Documents'), escola: L('🏫 Escola', '🏫 School'), dinheiro: L('💶 Finanças', '💶 Finances'), outro: L('📌 Outro', '📌 Other') };
+const REPETIR = { '0': L('Não repete', 'Does not repeat'), '1': L('Todos os meses', 'Every month'), '3': L('De 3 em 3 meses', 'Every 3 months'), '6': L('De 6 em 6 meses', 'Every 6 months'), '12': L('Todos os anos', 'Every year'), '24': L('De 2 em 2 anos', 'Every 2 years'), '60': L('De 5 em 5 anos', 'Every 5 years'), '120': L('De 10 em 10 anos', 'Every 10 years') };
+// 'Todos' e 'Família' são valores guardados em "quem"; só o nome mostrado muda
+const NOMES_QUEM = { Todos: L('Todos', 'Everyone'), 'Família': L('Família', 'Family') };
+const nomeQuem = q => NOMES_QUEM[q] || q;
 // Modelos de prazos comuns em Portugal (falta só a data)
 const MODELOS_PRAZO = [
-  { titulo: 'IUC', categoria: 'carro', repetirMeses: '12', notas: 'Paga-se no mês da matrícula, no Portal das Finanças' },
-  { titulo: 'Inspeção do carro', categoria: 'carro', repetirMeses: '24', notas: 'Dos 4 aos 8 anos: de 2 em 2 anos; depois todos os anos' },
-  { titulo: 'Seguro do carro', categoria: 'carro', repetirMeses: '12' },
-  { titulo: 'Revisão do carro', categoria: 'carro', repetirMeses: '12' },
-  { titulo: 'Seguro da casa', categoria: 'casa', repetirMeses: '12' },
-  { titulo: 'Revisão da caldeira / esquentador', categoria: 'casa', repetirMeses: '12' },
-  { titulo: 'Cartão de Cidadão', categoria: 'documentos', repetirMeses: '0', avisarDias: 90, notas: 'Pedir a renovação com antecedência' },
-  { titulo: 'Passaporte', categoria: 'documentos', repetirMeses: '0', avisarDias: 90 },
-  { titulo: 'Dentista', categoria: 'saude', repetirMeses: '6' },
-  { titulo: 'Consulta de rotina', categoria: 'saude', repetirMeses: '12' },
-  { titulo: 'Vacinas', categoria: 'saude', repetirMeses: '0', notas: 'Ver o Boletim de Vacinas (PNV)' },
-  { titulo: 'Entrega do IRS', categoria: 'dinheiro', repetirMeses: '12', notas: 'De 1 de abril a 30 de junho' },
-  { titulo: 'Renovação de matrícula', categoria: 'escola', repetirMeses: '12' }
+  { titulo: L('IUC', 'IUC (vehicle tax)'), categoria: 'carro', repetirMeses: '12', notas: L('Paga-se no mês da matrícula, no Portal das Finanças', 'Paid in the registration month, on the Portal das Finanças') },
+  { titulo: L('Inspeção do carro', 'Car inspection'), categoria: 'carro', repetirMeses: '24', notas: L('Dos 4 aos 8 anos: de 2 em 2 anos; depois todos os anos', 'From 4 to 8 years old: every 2 years; then every year') },
+  { titulo: L('Seguro do carro', 'Car insurance'), categoria: 'carro', repetirMeses: '12' },
+  { titulo: L('Revisão do carro', 'Car service'), categoria: 'carro', repetirMeses: '12' },
+  { titulo: L('Seguro da casa', 'Home insurance'), categoria: 'casa', repetirMeses: '12' },
+  { titulo: L('Revisão da caldeira / esquentador', 'Boiler / water heater service'), categoria: 'casa', repetirMeses: '12' },
+  { titulo: L('Cartão de Cidadão', 'ID card'), categoria: 'documentos', repetirMeses: '0', avisarDias: 90, notas: L('Pedir a renovação com antecedência', 'Request the renewal well in advance') },
+  { titulo: L('Passaporte', 'Passport'), categoria: 'documentos', repetirMeses: '0', avisarDias: 90 },
+  { titulo: L('Dentista', 'Dentist'), categoria: 'saude', repetirMeses: '6' },
+  { titulo: L('Consulta de rotina', 'Routine check-up'), categoria: 'saude', repetirMeses: '12' },
+  { titulo: L('Vacinas', 'Vaccines'), categoria: 'saude', repetirMeses: '0', notas: L('Ver o Boletim de Vacinas (PNV)', 'Check the vaccination record') },
+  { titulo: L('Entrega do IRS', 'Income tax return'), categoria: 'dinheiro', repetirMeses: '12', notas: L('De 1 de abril a 30 de junho', 'From April 1 to June 30') },
+  { titulo: L('Renovação de matrícula', 'School enrolment renewal'), categoria: 'escola', repetirMeses: '12' }
 ];
 let modeloPrazo = null;
 const CORES = ['#f778ba', '#58a6ff', '#3fb950', '#d29922', '#a371f7', '#ff7b72'];
 
 let familia = null;
 let endereco = '';
-let calendariosEscolares = [{ id: 'nacional', nome: 'Nacional (despacho)' }];
+let calendariosEscolares = [{ id: 'nacional', nome: L('Nacional (despacho)', 'National (official calendar)') }];
 const nomesCalendarios = () => Object.fromEntries(calendariosEscolares.map(c => [c.id, c.nome]));
 let separador = 'eventos';
 let filtro = '';
@@ -113,32 +130,32 @@ let aEditar = null; // id do item em edição
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const filhos = () => familia.filhos.map(f => f.nome);
 const corDe = q => (familia.filhos.find(f => f.nome === q) || {}).cor || '#8b949e';
-const chip = q => q ? `<span class="chip" style="color:${esc(corDe(q))};border-color:${esc(corDe(q))}">${esc(q)}</span>` : '';
+const chip = q => q ? `<span class="chip" style="color:${esc(corDe(q))};border-color:${esc(corDe(q))}">${esc(nomeQuem(q))}</span>` : '';
 const hojeISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 const ordemDia = d => DIAS.indexOf(d);
 function dataBonita(iso) {
   const [a, m, d] = iso.split('-').map(Number);
   const dt = new Date(a, m - 1, d);
-  return dt.toLocaleDateString('pt-PT', { weekday: 'short', day: 'numeric', month: 'short' });
+  return dt.toLocaleDateString(LOCALE, { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
 // ---------- Definição de cada separador ----------
 
-const quemCampo = (comTodos) => ({ k: 'quem', rotulo: 'Quem', tipo: 'select', cls: 'w-s', opcoes: () => (comTodos ? ['Todos'] : []).concat(filhos()), obrig: true });
+const quemCampo = (comTodos) => ({ k: 'quem', rotulo: L('Quem', 'Who'), tipo: 'select', cls: 'w-s', opcoes: () => (comTodos ? ['Todos'] : []).concat(filhos()), nomes: NOMES_QUEM, obrig: true });
 
 const SEPARADORES = {
   eventos: {
-    titulo: 'Consultas e eventos',
+    titulo: L('Consultas e eventos', 'Appointments & events'),
     novo: () => ({ quem: filtro || filhos()[0] || 'Todos', tipo: 'consulta', data: hojeISO() }),
     campos: [
       quemCampo(true),
-      { k: 'tipo', rotulo: 'Tipo', tipo: 'select', cls: 'w-s', opcoes: () => Object.keys(TIPOS_EVENTO), nomes: TIPOS_EVENTO },
-      { k: 'titulo', rotulo: 'Título', cls: 'w-l', obrig: true, ph: 'ex.: Pediatra' },
-      { k: 'data', rotulo: 'Data', tipo: 'date', obrig: true },
-      { k: 'inicio', rotulo: 'Início', tipo: 'time', cls: 'w-xs' },
-      { k: 'fim', rotulo: 'Fim', tipo: 'time', cls: 'w-xs' },
-      { k: 'local', rotulo: 'Local', cls: 'w-m' },
-      { k: 'notas', rotulo: 'Notas', cls: 'w-l' }
+      { k: 'tipo', rotulo: L('Tipo', 'Type'), tipo: 'select', cls: 'w-s', opcoes: () => Object.keys(TIPOS_EVENTO), nomes: TIPOS_EVENTO },
+      { k: 'titulo', rotulo: L('Título', 'Title'), cls: 'w-l', obrig: true, ph: L('ex.: Pediatra', 'e.g. Pediatrician') },
+      { k: 'data', rotulo: L('Data', 'Date'), tipo: 'date', obrig: true },
+      { k: 'inicio', rotulo: L('Início', 'Start'), tipo: 'time', cls: 'w-xs' },
+      { k: 'fim', rotulo: L('Fim', 'End'), tipo: 'time', cls: 'w-xs' },
+      { k: 'local', rotulo: L('Local', 'Place'), cls: 'w-m' },
+      { k: 'notas', rotulo: L('Notas', 'Notes'), cls: 'w-l' }
     ],
     listar(lista) {
       const hoje = hojeISO();
@@ -146,23 +163,23 @@ const SEPARADORES = {
       const prox = lista.filter(e => e.data >= hoje), pass = lista.filter(e => e.data < hoje).reverse();
       const linha = e => item(e, `${dataBonita(e.data)}${e.inicio ? ' · ' + e.inicio : ''}`,
         `${(TIPOS_EVENTO[e.tipo] || '').split(' ')[0]} ${esc(e.titulo)}${chip(e.quem)}<small>${[e.local, e.notas].filter(Boolean).map(esc).join(' · ')}</small>`);
-      return `<div class="grupo">Próximos</div>${prox.map(linha).join('') || '<div class="vazio">Nada marcado</div>'}` +
-        (pass.length ? `<div class="grupo">Passados <button class="btn mini" onclick="apagarPassados()">apagar todos</button></div><div class="passados">${pass.map(linha).join('')}</div>` : '');
+      return `<div class="grupo">${L('Próximos', 'Upcoming')}</div>${prox.map(linha).join('') || `<div class="vazio">${L('Nada marcado', 'Nothing scheduled')}</div>`}` +
+        (pass.length ? `<div class="grupo">${L('Passados', 'Past')} <button class="btn mini" onclick="apagarPassados()">${L('apagar todos', 'delete all')}</button></div><div class="passados">${pass.map(linha).join('')}</div>` : '');
     }
   },
   atividades: {
-    titulo: 'Atividades semanais',
+    titulo: L('Atividades semanais', 'Weekly activities'),
     novo: () => ({ quem: filtro || filhos()[0], dia: 'segunda', pausaFerias: true }),
     paraForm: a => ({ ...a, pausaFerias: a.pausaFerias !== false }),
     campos: [
       quemCampo(true),
-      { k: 'atividade', rotulo: 'Atividade', cls: 'w-m', obrig: true, ph: 'ex.: Natação' },
-      { k: 'dia', rotulo: 'Dia', tipo: 'select', cls: 'w-s', opcoes: () => DIAS },
-      { k: 'inicio', rotulo: 'Início', tipo: 'time', cls: 'w-xs' },
-      { k: 'fim', rotulo: 'Fim', tipo: 'time', cls: 'w-xs' },
-      { k: 'local', rotulo: 'Local', cls: 'w-m' },
-      { k: 'levar', rotulo: 'Levar', cls: 'w-l', ph: 'ex.: fato de banho, touca' },
-      { k: 'pausaFerias', rotulo: 'Pausa em férias e feriados', tipo: 'checkbox' }
+      { k: 'atividade', rotulo: L('Atividade', 'Activity'), cls: 'w-m', obrig: true, ph: L('ex.: Natação', 'e.g. Swimming') },
+      { k: 'dia', rotulo: L('Dia', 'Day'), tipo: 'select', cls: 'w-s', opcoes: () => DIAS, nomes: NOMES_DIAS },
+      { k: 'inicio', rotulo: L('Início', 'Start'), tipo: 'time', cls: 'w-xs' },
+      { k: 'fim', rotulo: L('Fim', 'End'), tipo: 'time', cls: 'w-xs' },
+      { k: 'local', rotulo: L('Local', 'Place'), cls: 'w-m' },
+      { k: 'levar', rotulo: L('Levar', 'Bring'), cls: 'w-l', ph: L('ex.: fato de banho, touca', 'e.g. swimsuit, swim cap') },
+      { k: 'pausaFerias', rotulo: L('Pausa em férias e feriados', 'Pause during school breaks and holidays'), tipo: 'checkbox' }
     ],
     listar(lista) {
       lista.sort((a, b) => ordemDia(a.dia) - ordemDia(b.dia) || (a.inicio || '').localeCompare(b.inicio || ''));
@@ -170,28 +187,28 @@ const SEPARADORES = {
       DIAS.forEach(d => {
         const doDia = lista.filter(a => a.dia === d);
         if (!doDia.length) return;
-        html += `<div class="grupo">${d}</div>` + doDia.map(a => item(a, [a.inicio, a.fim].filter(Boolean).join('–') || 'dia todo',
-          `${esc(a.atividade)}${chip(a.quem)}<small>${[a.local, a.levar && '🎒 ' + a.levar, a.pausaFerias === false && 'continua nas férias'].filter(Boolean).map(esc).join(' · ')}</small>`)).join('');
+        html += `<div class="grupo">${esc(NOMES_DIAS[d])}</div>` + doDia.map(a => item(a, [a.inicio, a.fim].filter(Boolean).join('–') || L('dia todo', 'all day'),
+          `${esc(a.atividade)}${chip(a.quem)}<small>${[a.local, a.levar && '🎒 ' + a.levar, a.pausaFerias === false && L('continua nas férias', 'continues during breaks')].filter(Boolean).map(esc).join(' · ')}</small>`)).join('');
       });
-      return html || '<div class="vazio">Sem atividades</div>';
+      return html || `<div class="vazio">${L('Sem atividades', 'No activities')}</div>`;
     }
   },
-  horarios: { titulo: '🕘 Horários' },
+  horarios: { titulo: L('🕘 Horários', '🕘 Timetables') },
   prazos: {
-    titulo: '📋 Prazos',
+    titulo: L('📋 Prazos', '📋 Deadlines'),
     semFiltro: true,
-    topo: () => `<div class="caixa"><div class="grupo" style="margin-top:0">Adicionar a partir de um modelo</div><div class="filtros" style="margin:6px 0 0">${MODELOS_PRAZO.map((m, i) =>
+    topo: () => `<div class="caixa"><div class="grupo" style="margin-top:0">${L('Adicionar a partir de um modelo', 'Add from a template')}</div><div class="filtros" style="margin:6px 0 0">${MODELOS_PRAZO.map((m, i) =>
       `<button class="filtro" onclick="usarModeloPrazo(${i})">${CATEGORIAS[m.categoria].split(' ')[0]} ${esc(m.titulo)}</button>`).join('')}</div></div>`,
     novo: () => { const m = modeloPrazo || {}; modeloPrazo = null; return { categoria: 'outro', repetirMeses: '12', avisarDias: 30, quem: 'Família', data: hojeISO(), ...m }; },
     paraForm: p => ({ ...p, repetirMeses: String(p.repetirMeses || 0) }),
     campos: [
-      { k: 'titulo', rotulo: 'O quê', cls: 'w-l', obrig: true, ph: 'ex.: IUC do Golf' },
-      { k: 'categoria', rotulo: 'Categoria', tipo: 'select', cls: 'w-s', opcoes: () => Object.keys(CATEGORIAS), nomes: CATEGORIAS },
-      { k: 'data', rotulo: 'Data (próxima vez)', tipo: 'date', obrig: true },
-      { k: 'repetirMeses', rotulo: 'Repete', tipo: 'select', cls: 'w-m', opcoes: () => Object.keys(REPETIR), nomes: REPETIR },
-      { k: 'avisarDias', rotulo: 'Avisar (dias antes)', tipo: 'number', cls: 'w-xs', min: 0, max: 365 },
-      { k: 'quem', rotulo: 'Quem', tipo: 'select', cls: 'w-s', opcoes: () => ['Família'].concat(filhos()) },
-      { k: 'notas', rotulo: 'Notas', cls: 'w-l' }
+      { k: 'titulo', rotulo: L('O quê', 'What'), cls: 'w-l', obrig: true, ph: L('ex.: IUC do Golf', 'e.g. Golf road tax') },
+      { k: 'categoria', rotulo: L('Categoria', 'Category'), tipo: 'select', cls: 'w-s', opcoes: () => Object.keys(CATEGORIAS), nomes: CATEGORIAS },
+      { k: 'data', rotulo: L('Data (próxima vez)', 'Date (next time)'), tipo: 'date', obrig: true },
+      { k: 'repetirMeses', rotulo: L('Repete', 'Repeats'), tipo: 'select', cls: 'w-m', opcoes: () => Object.keys(REPETIR), nomes: REPETIR },
+      { k: 'avisarDias', rotulo: L('Avisar (dias antes)', 'Remind (days before)'), tipo: 'number', cls: 'w-xs', min: 0, max: 365 },
+      { k: 'quem', rotulo: L('Quem', 'Who'), tipo: 'select', cls: 'w-s', opcoes: () => ['Família'].concat(filhos()), nomes: NOMES_QUEM },
+      { k: 'notas', rotulo: L('Notas', 'Notes'), cls: 'w-l' }
     ],
     doForm: v => { v.repetirMeses = +v.repetirMeses || 0; v.avisarDias = v.avisarDias === undefined ? 30 : +v.avisarDias; v.feito = undefined; return v; },
     listar(lista) {
@@ -200,32 +217,32 @@ const SEPARADORES = {
       lista.sort((a, b) => (a.data || '').localeCompare(b.data || ''));
       const linha = p => item(p, dataBonita(p.data),
         `${CATEGORIAS[p.categoria] ? CATEGORIAS[p.categoria].split(' ')[0] : '📌'} ${esc(p.titulo)}${p.quem && p.quem !== 'Família' ? chip(p.quem) : ''}
-         <small>${p.feito ? 'feito a ' + dataBonita(p.feito) : (dias(p) < 0 ? `<span style="color:#f85149">atrasado há ${-dias(p)} dias</span>` : `daqui a ${dias(p)} dias`)} · ${REPETIR[String(p.repetirMeses || 0)]}${p.notas ? ' · ' + esc(p.notas) : ''}</small>`
-        + (p.feito ? '' : ` <button class="btn mini" style="color:#3fb950" onclick="event.stopPropagation();prazoFeito('${esc(p.id)}')">✓ feito</button>`));
+         <small>${p.feito ? L('feito a ', 'done on ') + dataBonita(p.feito) : (dias(p) < 0 ? `<span style="color:#f85149">${L(`atrasado há ${-dias(p)} dias`, `${-dias(p)} days overdue`)}</span>` : L(`daqui a ${dias(p)} dias`, `in ${dias(p)} days`))} · ${REPETIR[String(p.repetirMeses || 0)]}${p.notas ? ' · ' + esc(p.notas) : ''}</small>`
+        + (p.feito ? '' : ` <button class="btn mini" style="color:#3fb950" onclick="event.stopPropagation();prazoFeito('${esc(p.id)}')">✓ ${L('feito', 'done')}</button>`));
       const ativos = lista.filter(p => !p.feito);
       const atrasados = ativos.filter(p => p.data < hoje);
       const avisar = ativos.filter(p => p.data >= hoje && dias(p) <= (p.avisarDias ?? 30));
       const depois = ativos.filter(p => p.data >= hoje && dias(p) > (p.avisarDias ?? 30));
       const feitos = lista.filter(p => p.feito);
       let html = '';
-      if (atrasados.length) html += '<div class="grupo" style="color:#f85149">Atrasados</div>' + atrasados.map(linha).join('');
-      html += '<div class="grupo">A aparecer no dashboard</div>' + (avisar.map(linha).join('') || '<div class="vazio">Nada para já</div>');
-      if (depois.length) html += '<div class="grupo">Mais tarde</div>' + depois.map(linha).join('');
-      if (feitos.length) html += '<div class="grupo">Feitos (não se repetem)</div><div class="passados">' + feitos.map(linha).join('') + '</div>';
+      if (atrasados.length) html += `<div class="grupo" style="color:#f85149">${L('Atrasados', 'Overdue')}</div>` + atrasados.map(linha).join('');
+      html += `<div class="grupo">${L('A aparecer no dashboard', 'Showing on the dashboard')}</div>` + (avisar.map(linha).join('') || `<div class="vazio">${L('Nada para já', 'Nothing for now')}</div>`);
+      if (depois.length) html += `<div class="grupo">${L('Mais tarde', 'Later')}</div>` + depois.map(linha).join('');
+      if (feitos.length) html += `<div class="grupo">${L('Feitos (não se repetem)', 'Done (not repeating)')}</div><div class="passados">` + feitos.map(linha).join('') + '</div>';
       return html;
     }
   },
   aniversarios: {
-    titulo: 'Aniversários',
+    titulo: L('Aniversários', 'Birthdays'),
     novo: () => ({ quem: filtro || filhos()[0] }),
     campos: [
-      { k: 'nome', rotulo: 'Nome', cls: 'w-m', obrig: true },
-      { k: 'dia', rotulo: 'Dia', tipo: 'number', cls: 'w-xs', obrig: true, min: 1, max: 31 },
-      { k: 'mes', rotulo: 'Mês', tipo: 'select', cls: 'w-s', opcoes: () => MESES.map((_, i) => String(i + 1)), nomes: Object.fromEntries(MESES.map((m, i) => [String(i + 1), m])) },
-      { k: 'ano', rotulo: 'Ano (opcional)', tipo: 'number', cls: 'w-s', min: 1990, max: 2100 },
+      { k: 'nome', rotulo: L('Nome', 'Name'), cls: 'w-m', obrig: true },
+      { k: 'dia', rotulo: L('Dia', 'Day'), tipo: 'number', cls: 'w-xs', obrig: true, min: 1, max: 31 },
+      { k: 'mes', rotulo: L('Mês', 'Month'), tipo: 'select', cls: 'w-s', opcoes: () => MESES.map((_, i) => String(i + 1)), nomes: Object.fromEntries(MESES.map((m, i) => [String(i + 1), m])) },
+      { k: 'ano', rotulo: L('Ano (opcional)', 'Year (optional)'), tipo: 'number', cls: 'w-s', min: 1990, max: 2100 },
       quemCampo(true),
-      { k: 'nota', rotulo: 'Nota', cls: 'w-l', ph: 'ex.: festa no sábado' },
-      { k: 'familia', rotulo: 'É da família (contagem decrescente sempre visível)', tipo: 'checkbox' }
+      { k: 'nota', rotulo: L('Nota', 'Note'), cls: 'w-l', ph: L('ex.: festa no sábado', 'e.g. party on Saturday') },
+      { k: 'familia', rotulo: L('É da família (contagem decrescente sempre visível)', 'Family member (countdown always visible)'), tipo: 'checkbox' }
     ],
     // guardado como "MM-DD", editado como dia + mês
     paraForm: a => ({ ...a, mes: String(parseInt(a.data.split('-')[0], 10)), dia: parseInt(a.data.split('-')[1], 10) }),
@@ -235,109 +252,111 @@ const SEPARADORES = {
       const faltam = a => { const [m, d] = a.data.split('-').map(Number); let p = new Date(hoje.getFullYear(), m - 1, d); if (p < hoje) p = new Date(hoje.getFullYear() + 1, m - 1, d); return Math.round((p - hoje) / 864e5); };
       lista.sort((a, b) => faltam(a) - faltam(b));
       return lista.map(a => { const [m, d] = a.data.split('-').map(Number); const f = faltam(a);
-        return item(a, `${d} ${MESES[m - 1]}`, `🎂 ${esc(a.nome)}${a.ano ? ` <small style="display:inline">(${new Date().getFullYear() - a.ano + (f > 0 && new Date().getMonth() + 1 <= m ? 0 : 1)} anos)</small>` : ''}${chip(a.quem)}<small>${f === 0 ? 'hoje! 🎉' : `daqui a ${f} dias`}${a.nota ? ' · ' + esc(a.nota) : ''}</small>`);
-      }).join('') || '<div class="vazio">Sem aniversários</div>';
+        return item(a, EN ? `${MESES[m - 1]} ${d}` : `${d} ${MESES[m - 1]}`, `🎂 ${esc(a.nome)}${a.ano ? ` <small style="display:inline">(${new Date().getFullYear() - a.ano + (f > 0 && new Date().getMonth() + 1 <= m ? 0 : 1)} ${L('anos', 'years')})</small>` : ''}${chip(a.quem)}<small>${f === 0 ? L('hoje! 🎉', 'today! 🎉') : L(`daqui a ${f} dias`, `in ${f} days`)}${a.nota ? ' · ' + esc(a.nota) : ''}</small>`);
+      }).join('') || `<div class="vazio">${L('Sem aniversários', 'No birthdays')}</div>`;
     }
   },
   filhos: {
-    titulo: 'Filhos',
+    titulo: L('Filhos', 'Children'),
     novo: () => ({ cor: CORES[familia.filhos.length % CORES.length] }),
     chave: 'nome',
     campos: [
-      { k: 'nome', rotulo: 'Nome', cls: 'w-m', obrig: true },
-      { k: 'cor', rotulo: 'Cor', tipo: 'color' },
-      { k: 'nivel', rotulo: 'Nível de ensino', tipo: 'select', cls: 'w-m', opcoes: () => Object.keys(NIVEIS), nomes: NIVEIS },
-      { k: 'ano', rotulo: 'Ano / turma', cls: 'w-s', ph: 'ex.: 3.º ano' },
-      { k: 'calendario', rotulo: 'Calendário escolar', tipo: 'select', cls: 'w-l', opcoes: () => calendariosEscolares.map(c => c.id), nomes: nomesCalendarios }
+      { k: 'nome', rotulo: L('Nome', 'Name'), cls: 'w-m', obrig: true },
+      { k: 'cor', rotulo: L('Cor', 'Colour'), tipo: 'color' },
+      { k: 'nivel', rotulo: L('Nível de ensino', 'School level'), tipo: 'select', cls: 'w-m', opcoes: () => Object.keys(NIVEIS), nomes: NIVEIS },
+      { k: 'ano', rotulo: L('Ano / turma', 'Grade / class'), cls: 'w-s', ph: L('ex.: 3.º ano', 'e.g. 3rd grade') },
+      { k: 'calendario', rotulo: L('Calendário escolar', 'School calendar'), tipo: 'select', cls: 'w-l', opcoes: () => calendariosEscolares.map(c => c.id), nomes: nomesCalendarios }
     ],
     listar(lista) {
-      return lista.map(f => item(f, '', `<span class="chip" style="color:${esc(f.cor)};border-color:${esc(f.cor)};font-size:15px">${esc(f.nome)}</span><small>${f.ano ? esc(f.ano) + ' · ' : ''}${f.nivel ? esc(NIVEIS[f.nivel]) : 'sem nível de ensino: as férias de verão não são consideradas'} · ${esc(nomesCalendarios()[f.calendario || 'nacional'] || f.calendario)}</small>`)).join('');
+      return lista.map(f => item(f, '', `<span class="chip" style="color:${esc(f.cor)};border-color:${esc(f.cor)};font-size:15px">${esc(f.nome)}</span><small>${f.ano ? esc(f.ano) + ' · ' : ''}${f.nivel ? esc(NIVEIS[f.nivel]) : L('sem nível de ensino: as férias de verão não são consideradas', 'no school level: summer holidays are not taken into account')} · ${esc(nomesCalendarios()[f.calendario || 'nacional'] || f.calendario)}</small>`)).join('');
     }
   },
   contas: {
-    titulo: '💶 Contas',
+    titulo: L('💶 Contas', '💶 Accounts'),
     semFiltro: true,
     topo: interruptorFinancas,
     novo: () => ({ atualizado: hojeISO() }),
     campos: [
-      { k: 'nome', rotulo: 'Conta', cls: 'w-l', obrig: true, ph: 'ex.: Conta à ordem' },
-      { k: 'saldo', rotulo: 'Saldo (€)', tipo: 'number', cls: 'w-s', obrig: true, step: '0.01' },
-      { k: 'atualizado', rotulo: 'Atualizado em', tipo: 'date' }
+      { k: 'nome', rotulo: L('Conta', 'Account'), cls: 'w-l', obrig: true, ph: L('ex.: Conta à ordem', 'e.g. Current account') },
+      { k: 'saldo', rotulo: L('Saldo (€)', 'Balance (€)'), tipo: 'number', cls: 'w-s', obrig: true, step: '0.01' },
+      { k: 'atualizado', rotulo: L('Atualizado em', 'Updated on'), tipo: 'date' }
     ],
     // ao editar, a data passa a ser hoje (o saldo acabou de ser atualizado)
     paraForm: c => ({ ...c, atualizado: hojeISO() }),
     doForm: v => ({ ...v, saldo: Number(v.saldo) }),
     listar(lista) {
       const total = lista.reduce((s, c) => s + (Number(c.saldo) || 0), 0);
-      return `<div class="grupo">Total: ${euros(total)}</div>` + (lista.map(c => item(c, c.atualizado ? dataBonita(c.atualizado) : '',
-        `${esc(c.nome)}<small>${euros(c.saldo)}</small>`)).join('') || '<div class="vazio">Sem contas</div>');
+      return `<div class="grupo">${L('Total', 'Total')}: ${euros(total)}</div>` + (lista.map(c => item(c, c.atualizado ? dataBonita(c.atualizado) : '',
+        `${esc(c.nome)}<small>${euros(c.saldo)}</small>`)).join('') || `<div class="vazio">${L('Sem contas', 'No accounts')}</div>`);
     }
   },
   pagamentos: {
-    titulo: '💸 Pagamentos',
+    titulo: L('💸 Pagamentos', '💸 Payments'),
     semFiltro: true,
     topo: interruptorFinancas,
     novo: () => ({ dia: 1 }),
     campos: [
-      { k: 'descricao', rotulo: 'Descrição', cls: 'w-l', obrig: true, ph: 'ex.: Renda, Luz, Colégio' },
-      { k: 'valor', rotulo: 'Valor (€)', tipo: 'number', cls: 'w-s', obrig: true, step: '0.01' },
-      { k: 'dia', rotulo: 'Dia do mês', tipo: 'number', cls: 'w-xs', obrig: true, min: 1, max: 31 }
+      { k: 'descricao', rotulo: L('Descrição', 'Description'), cls: 'w-l', obrig: true, ph: L('ex.: Renda, Luz, Colégio', 'e.g. Rent, Electricity, School') },
+      { k: 'valor', rotulo: L('Valor (€)', 'Amount (€)'), tipo: 'number', cls: 'w-s', obrig: true, step: '0.01' },
+      { k: 'dia', rotulo: L('Dia do mês', 'Day of month'), tipo: 'number', cls: 'w-xs', obrig: true, min: 1, max: 31 }
     ],
     doForm: v => ({ ...v, valor: Number(v.valor), dia: Number(v.dia) }),
     listar(lista) {
       lista.sort((a, b) => a.dia - b.dia);
       const total = lista.reduce((s, p) => s + (Number(p.valor) || 0), 0);
-      return `<div class="grupo">Total mensal: ${euros(total)}</div>` + (lista.map(p => item(p, 'dia ' + p.dia,
-        `${esc(p.descricao)}<small>${euros(p.valor)}</small>`)).join('') || '<div class="vazio">Sem pagamentos</div>');
+      return `<div class="grupo">${L('Total mensal', 'Monthly total')}: ${euros(total)}</div>` + (lista.map(p => item(p, L('dia ', 'day ') + p.dia,
+        `${esc(p.descricao)}<small>${euros(p.valor)}</small>`)).join('') || `<div class="vazio">${L('Sem pagamentos', 'No payments')}</div>`);
     }
   },
   destinos: {
-    titulo: '🚗 Trânsito',
+    titulo: L('🚗 Trânsito', '🚗 Traffic'),
     semFiltro: true,
     topo: topoTransito,
     novo: () => ({ icone: '📍' }),
     campos: [
-      { k: 'link', rotulo: 'Link do Google Maps (ou "lat, lng")', cls: 'w-l', ph: 'cola aqui o link do sítio' },
-      { k: 'nome', rotulo: 'Nome', cls: 'w-m', ph: 'ex.: Escola' },
-      { k: 'icone', rotulo: 'Ícone', tipo: 'select', cls: 'w-s', opcoes: () => ['🏢', '🏫', '👶', '🏠', '⚽', '🏥', '🏪', '📍'] },
-      { k: 'mostrar', rotulo: 'Mostrar', tipo: 'select', cls: 'w-m', opcoes: () => ['sempre', 'semana', 'fimdesemana'], nomes: { sempre: 'Sempre no ecrã', semana: 'No ecrã nos dias úteis', fimdesemana: 'No ecrã ao fim de semana e feriados' } },
-      { k: 'lat', rotulo: 'Latitude', tipo: 'number', cls: 'w-s', step: 'any' },
-      { k: 'lng', rotulo: 'Longitude', tipo: 'number', cls: 'w-s', step: 'any' }
+      { k: 'link', rotulo: L('Link do Google Maps (ou "lat, lng")', 'Google Maps link (or "lat, lng")'), cls: 'w-l', ph: L('cola aqui o link do sítio', 'paste the place link here') },
+      { k: 'nome', rotulo: L('Nome', 'Name'), cls: 'w-m', ph: L('ex.: Escola', 'e.g. School') },
+      { k: 'icone', rotulo: L('Ícone', 'Icon'), tipo: 'select', cls: 'w-s', opcoes: () => ['🏢', '🏫', '👶', '🏠', '⚽', '🏥', '🏪', '📍'] },
+      { k: 'mostrar', rotulo: L('Mostrar', 'Show'), tipo: 'select', cls: 'w-m', opcoes: () => ['sempre', 'semana', 'fimdesemana'], nomes: { sempre: L('Sempre no ecrã', 'Always on screen'), semana: L('No ecrã nos dias úteis', 'On screen on weekdays'), fimdesemana: L('No ecrã ao fim de semana e feriados', 'On screen at weekends and holidays') } },
+      { k: 'lat', rotulo: L('Latitude', 'Latitude'), tipo: 'number', cls: 'w-s', step: 'any' },
+      { k: 'lng', rotulo: L('Longitude', 'Longitude'), tipo: 'number', cls: 'w-s', step: 'any' }
     ],
     async doForm(v) {
       if (v.link) {
         const c = await coordenadasDe(v.link);
-        if (!c) { mostrar('Não encontrei coordenadas nesse link', true); throw new Error('link'); }
+        if (!c) { mostrar(L('Não encontrei coordenadas nesse link', "Couldn't find coordinates in that link"), true); throw new Error('link'); }
         v.lat = c.lat; v.lng = c.lng;
         if (!v.nome && c.nome) v.nome = c.nome;
       }
       delete v.link;
-      if (!isFinite(+v.lat) || !isFinite(+v.lng) || v.lat === undefined) { mostrar('Falta o link ou as coordenadas', true); throw new Error('coords'); }
+      if (!isFinite(+v.lat) || !isFinite(+v.lng) || v.lat === undefined) { mostrar(L('Falta o link ou as coordenadas', 'The link or the coordinates are missing'), true); throw new Error('coords'); }
       v.lat = +v.lat; v.lng = +v.lng;
-      if (!v.nome) v.nome = 'Destino';
+      if (!v.nome) v.nome = L('Destino', 'Destination');
       return v;
     },
     listar(lista) {
       return lista.map(d => item(d, `${(+d.lat).toFixed(4)}, ${(+d.lng).toFixed(4)}`,
         `${d.logo ? `<img src="${esc(d.logo)}" style="width:22px;height:22px;border-radius:4px;vertical-align:-5px">` : esc(d.icone || '📍')} ${esc(d.nome)}
-         <small>${{ semana: 'dias úteis', fimdesemana: 'fim de semana e feriados' }[d.mostrar] || 'sempre'} · logo: <button class="btn mini" onclick="logoFicheiro('${esc(d.id)}')">carregar ficheiro</button><button class="btn mini" onclick="logoLink('${esc(d.id)}')">link de imagem</button>${d.logo ? `<button class="btn mini" style="color:#f85149" onclick="logoApagar('${esc(d.id)}')">remover</button>` : ''}</small>`)).join('') || '<div class="vazio">Sem destinos</div>';
+         <small>${{ semana: L('dias úteis', 'weekdays'), fimdesemana: L('fim de semana e feriados', 'weekends and holidays') }[d.mostrar] || L('sempre', 'always')} · logo: <button class="btn mini" onclick="logoFicheiro('${esc(d.id)}')">${L('carregar ficheiro', 'upload file')}</button><button class="btn mini" onclick="logoLink('${esc(d.id)}')">${L('link de imagem', 'image link')}</button>${d.logo ? `<button class="btn mini" style="color:#f85149" onclick="logoApagar('${esc(d.id)}')">${L('remover', 'remove')}</button>` : ''}</small>`)).join('') || `<div class="vazio">${L('Sem destinos', 'No destinations')}</div>`;
     }
   },
-  escola: { titulo: '📅 Escola e feriados' },
-  noite: { titulo: '🌙 Modo noite' },
-  ical: { titulo: '📱 Calendário no iPhone' }
+  escola: { titulo: L('📅 Escola e feriados', '📅 School & holidays') },
+  noite: { titulo: L('🌙 Modo noite', '🌙 Night mode') },
+  ical: { titulo: L('📱 Calendário no iPhone', '📱 iPhone calendar') }
 };
 
-const euros = v => (Number(v) || 0).toLocaleString('pt-PT', { style: 'currency', currency: 'EUR' });
+const euros = v => (Number(v) || 0).toLocaleString(EN ? 'en-IE' : 'pt-PT', { style: 'currency', currency: 'EUR' });
 
 function interruptorFinancas() {
   return `<div class="caixa"><label style="flex-direction:row;align-items:center;gap:10px;color:#e6edf3;font-size:15px">
     <input type="checkbox" ${familia.mostrarFinancas ? 'checked' : ''} onchange="mostrarFinancas(this.checked)" style="width:20px;height:20px">
-    Mostrar a área bancária no dashboard</label>
-    <p style="margin:8px 0 0;font-size:13px;color:#8b949e">Quando está ativa, aparece um botão 💶 discreto no canto do iPad. Ao tocar, os saldos ficam visíveis durante 60 segundos e depois voltam a esconder-se.
-    Quando está desligada, os valores nem sequer são enviados para o iPad.</p></div>`;
+    ${L('Mostrar a área bancária no dashboard', 'Show the banking area on the dashboard')}</label>
+    <p style="margin:8px 0 0;font-size:13px;color:#8b949e">${L(`Quando está ativa, aparece um botão 💶 discreto no canto do iPad. Ao tocar, os saldos ficam visíveis durante 60 segundos e depois voltam a esconder-se.
+    Quando está desligada, os valores nem sequer são enviados para o iPad.`,
+    `When on, a discreet 💶 button appears in the corner of the iPad. Tapping it shows the balances for 60 seconds, then they hide again.
+    When off, the amounts are not even sent to the iPad.`)}</p></div>`;
 }
-window.mostrarFinancas = async on => { familia.mostrarFinancas = on; await guardar(on ? 'Área bancária ativa' : 'Área bancária escondida'); };
+window.mostrarFinancas = async on => { familia.mostrarFinancas = on; await guardar(on ? L('Área bancária ativa', 'Banking area on') : L('Área bancária escondida', 'Banking area hidden')); };
 
 // ---------- Desenho ----------
 
@@ -346,8 +365,8 @@ function item(x, quando, corpo) {
   return `<div class="item"><span class="q" style="background:${esc(corDe(x.quem || x.nome))}"></span>` +
     (quando !== '' ? `<span class="quando">${esc(quando)}</span>` : '') +
     `<span class="o">${corpo}</span>` +
-    `<button class="btn mini" onclick="editar('${esc(id)}')">editar</button>` +
-    `<button class="btn perigo" onclick="apagar('${esc(id)}')" title="Apagar">✕</button></div>`;
+    `<button class="btn mini" onclick="editar('${esc(id)}')">${L('editar', 'edit')}</button>` +
+    `<button class="btn perigo" onclick="apagar('${esc(id)}')" title="${L('Apagar', 'Delete')}">✕</button></div>`;
 }
 
 function desenharTabs() {
@@ -363,7 +382,7 @@ function campoHTML(c, v) {
     return `<label style="flex-direction:row;align-items:center;gap:8px;color:#e6edf3;padding-bottom:8px"><input type="checkbox" name="${c.k}" ${val ? 'checked' : ''} style="width:18px;height:18px">${c.rotulo}</label>`;
   }
   if (c.tipo === 'select') {
-    input = `<select ${attrs}>${c.opcoes().map(o => `<option value="${esc(o)}" ${String(o) === String(val) ? 'selected' : ''}>${esc(c.nomes ? (typeof c.nomes === 'function' ? c.nomes() : c.nomes)[o] : o)}</option>`).join('')}</select>`;
+    input = `<select ${attrs}>${c.opcoes().map(o => `<option value="${esc(o)}" ${String(o) === String(val) ? 'selected' : ''}>${esc(c.nomes ? (typeof c.nomes === 'function' ? c.nomes() : c.nomes)[o] ?? o : o)}</option>`).join('')}</select>`;
   } else {
     input = `<input type="${c.tipo || 'text'}" ${attrs} value="${esc(val)}">`;
   }
@@ -385,46 +404,51 @@ function desenhar() {
   const valores = atual ? (s.paraForm ? s.paraForm(atual) : atual) : s.novo();
 
   const filtros = (separador === 'filhos' || s.semFiltro) ? '' : `<div class="filtros">` +
-    [''].concat(filhos()).map(f => `<button class="filtro ${f === filtro ? 'ativo' : ''}" onclick="filtrar('${esc(f)}')">${f ? esc(f) : 'Todos'}</button>`).join('') + `</div>`;
+    [''].concat(filhos()).map(f => `<button class="filtro ${f === filtro ? 'ativo' : ''}" onclick="filtrar('${esc(f)}')">${f ? esc(f) : L('Todos', 'Everyone')}</button>`).join('') + `</div>`;
 
   const visiveis = lista.filter(x => !filtro || separador === 'filhos' || s.semFiltro || x.quem === filtro || x.quem === 'Todos');
 
   el.innerHTML = filtros + (s.topo ? s.topo() : '') +
-    `<form id="form" onsubmit="guardarItem(event)"><h3>${atual ? 'Editar' : 'Adicionar'}</h3>` +
+    `<form id="form" onsubmit="guardarItem(event)"><h3>${atual ? L('Editar', 'Edit') : L('Adicionar', 'Add')}</h3>` +
     s.campos.map(c => campoHTML(c, valores)).join('') +
-    `<div class="botoes"><button class="btn" type="submit">${atual ? 'Guardar' : 'Adicionar'}</button>` +
-    (atual ? `<button class="btn sec" type="button" onclick="cancelar()">Cancelar</button>` : '') + `</div></form>` +
+    `<div class="botoes"><button class="btn" type="submit">${atual ? L('Guardar', 'Save') : L('Adicionar', 'Add')}</button>` +
+    (atual ? `<button class="btn sec" type="button" onclick="cancelar()">${L('Cancelar', 'Cancel')}</button>` : '') + `</div></form>` +
     s.listar([...visiveis]);
 }
 
 async function desenharEscola(el) {
-  el.innerHTML = '<div class="vazio">A carregar…</div>';
+  el.innerHTML = `<div class="vazio">${L('A carregar…', 'Loading…')}</div>`;
   const r = await (await fetch('/api/escola')).json();
   const dt = iso => dataBonita(iso);
   const semNivel = familia.filhos.filter(f => !f.nivel).map(f => f.nome);
   const usados = new Set(familia.filhos.map(f => f.calendario || 'nacional'));
   r.anos = r.anos.filter(a => usados.has(a.calendario || 'nacional'));
   let html = '';
-  if (semNivel.length) html += `<div class="caixa" style="border-color:#d29922"><p style="margin:0">⚠️ Falta indicar o nível de ensino de <b>${semNivel.map(esc).join(', ')}</b> no separador <a href="#filhos" onclick="mudar('filhos')" style="color:#58a6ff">Filhos</a>. Sem ele, o fim do ano letivo e as férias de verão não são considerados.</p></div>`;
+  if (semNivel.length) html += `<div class="caixa" style="border-color:#d29922"><p style="margin:0">⚠️ ${L(
+    `Falta indicar o nível de ensino de <b>${semNivel.map(esc).join(', ')}</b> no separador <a href="#filhos" onclick="mudar('filhos')" style="color:#58a6ff">Filhos</a>. Sem ele, o fim do ano letivo e as férias de verão não são considerados.`,
+    `The school level of <b>${semNivel.map(esc).join(', ')}</b> is missing in the <a href="#filhos" onclick="mudar('filhos')" style="color:#58a6ff">Children</a> tab. Without it, the end of the school year and the summer holidays are not taken into account.`)}</p></div>`;
   r.anos.forEach(a => {
     const quemUsa = familia.filhos.filter(f => (f.calendario || 'nacional') === (a.calendario || 'nacional')).map(f => chip(f.nome)).join('');
-    html += `<div class="caixa"><h3>Ano letivo ${esc(a.anoLetivo)} · ${esc(a.calendarioNome)}${quemUsa}</h3>${a._nota ? `<p style="font-size:13px;color:#8b949e;margin:0 0 6px">${esc(a._nota)}</p>` : ''}`;
-    html += '<div class="grupo">Interrupções (sem aulas)</div>' + (a.interrupcoes || []).map(x =>
+    html += `<div class="caixa"><h3>${L('Ano letivo', 'School year')} ${esc(a.anoLetivo)} · ${esc(a.calendarioNome)}${quemUsa}</h3>${a._nota ? `<p style="font-size:13px;color:#8b949e;margin:0 0 6px">${esc(a._nota)}</p>` : ''}`;
+    html += `<div class="grupo">${L('Interrupções (sem aulas)', 'Breaks (no classes)')}</div>` + (a.interrupcoes || []).map(x =>
       `<div class="item"><span class="q" style="background:#a371f7"></span><span class="quando">${dt(x.inicio)} → ${dt(x.fim)}</span><span class="o">${esc(x.nome)}</span></div>`).join('');
-    if ((a.diasEspeciais || []).length) html += '<div class="grupo">Dias especiais (há aulas)</div>' + a.diasEspeciais.map(x =>
+    if ((a.diasEspeciais || []).length) html += `<div class="grupo">${L('Dias especiais (há aulas)', 'Special days (classes held)')}</div>` + a.diasEspeciais.map(x =>
       `<div class="item"><span class="q" style="background:#58a6ff"></span><span class="quando">${dt(x.data)}</span><span class="o">${esc(x.nome)}</span></div>`).join('');
-    html += '<div class="grupo">Início e fim das aulas</div>' + Object.keys(r.niveis).map(n => {
+    html += `<div class="grupo">${L('Início e fim das aulas', 'Start and end of classes')}</div>` + Object.keys(r.niveis).map(n => {
       const quem = familia.filhos.filter(f => f.nivel === n).map(f => chip(f.nome)).join('');
-      return `<div class="item"><span class="q" style="background:${quem ? '#3fb950' : '#30363d'}"></span><span class="quando">${esc(r.niveis[n])}</span><span class="o">${a.inicio && a.inicio[n] ? dt(a.inicio[n]) : '?'} → ${a.fim && a.fim[n] ? dt(a.fim[n]) : '?'}${quem}</span></div>`;
+      return `<div class="item"><span class="q" style="background:${quem ? '#3fb950' : '#30363d'}"></span><span class="quando">${esc(EN && NIVEIS[n] ? NIVEIS[n] : r.niveis[n])}</span><span class="o">${a.inicio && a.inicio[n] ? dt(a.inicio[n]) : '?'} → ${a.fim && a.fim[n] ? dt(a.fim[n]) : '?'}${quem}</span></div>`;
     }).join('');
     html += '</div>';
   });
-  html += `<div class="caixa"><h3>Próximos feriados</h3>${r.feriados.map(fe =>
-    `<div class="item"><span class="q" style="background:#d29922"></span><span class="quando">${dt(fe.data)}</span><span class="o">🇵🇹 ${esc(fe.nome)}${fe.municipal ? ' <small style="display:inline">(municipal)</small>' : ''}</span></div>`).join('')}</div>`;
-  html += `<div class="caixa"><p style="margin:0;font-size:14px;color:#8b949e">
+  html += `<div class="caixa"><h3>${L('Próximos feriados', 'Upcoming holidays')}</h3>${r.feriados.map(fe =>
+    `<div class="item"><span class="q" style="background:#d29922"></span><span class="quando">${dt(fe.data)}</span><span class="o">🇵🇹 ${esc(fe.nome)}${fe.municipal ? ` <small style="display:inline">(${L('municipal', 'municipal')})</small>` : ''}</span></div>`).join('')}</div>`;
+  html += `<div class="caixa"><p style="margin:0;font-size:14px;color:#8b949e">${L(`
     As atividades marcadas com "Pausa em férias e feriados" desaparecem do dashboard nesses dias e ficam como exceção no calendário do iPhone.<br>
     O calendário escolar está em <code>data/calendario-escolar.json</code>. Quando sair o despacho do ano seguinte, normalmente em junho ou julho, acrescenta lá o novo ano.
-    O feriado municipal define-se em <code>feriadoMunicipal</code> no <code>config.json</code>.</p></div>`;
+    O feriado municipal define-se em <code>feriadoMunicipal</code> no <code>config.json</code>.`, `
+    Activities marked "Pause during school breaks and holidays" disappear from the dashboard on those days and show up as exceptions in the iPhone calendar.<br>
+    The school calendar lives in <code>data/calendario-escolar.json</code>. When the next year's official calendar is published, usually in June or July, add the new year there.
+    The municipal holiday is set in <code>feriadoMunicipal</code> in <code>config.json</code>.`)}</p></div>`;
   el.innerHTML = html;
 }
 
@@ -436,15 +460,15 @@ window.usarModeloPrazo = i => {
   desenhar();
   const d = document.querySelector('#form [name=data]');
   if (d) { d.focus(); d.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-  mostrar('Escolhe a data e carrega em Adicionar');
+  mostrar(L('Escolhe a data e carrega em Adicionar', 'Pick the date and press Add'));
 };
 
 window.prazoFeito = async id => {
   const r = await fetch('/api/prazos/' + encodeURIComponent(id) + '/feito', { method: 'POST', headers: { 'X-Pin': localStorage.getItem('pin') || '' } });
-  if (r.status === 401) { const pin = prompt('PIN de gestão:'); if (pin != null) { localStorage.setItem('pin', pin); return prazoFeito(id); } return; }
+  if (r.status === 401) { const pin = prompt(L('PIN de gestão:', 'Management PIN:')); if (pin != null) { localStorage.setItem('pin', pin); return prazoFeito(id); } return; }
   const j = await r.json();
-  if (!r.ok) return mostrar('Erro: ' + j.erro, true);
-  mostrar(j.prazo.feito ? 'Feito ✓' : 'Feito ✓ · próxima vez: ' + dataBonita(j.prazo.data));
+  if (!r.ok) return mostrar(L('Erro: ', 'Error: ') + j.erro, true);
+  mostrar(j.prazo.feito ? L('Feito ✓', 'Done ✓') : L('Feito ✓ · próxima vez: ', 'Done ✓ · next time: ') + dataBonita(j.prazo.data));
   await carregar();
 };
 
@@ -458,11 +482,11 @@ async function coordenadasDe(texto) {
 function topoTransito() {
   const c = familia.casa || {};
   setTimeout(atualizarEstadoTransito, 0);
-  return `<div class="caixa"><h3>🏠 Ponto de partida (casa)</h3>
-    <p style="font-size:14px;color:#8b949e;margin:4px 0 10px">Atual: ${esc(c.nome || '—')} · ${c.lat != null ? (+c.lat).toFixed(5) + ', ' + (+c.lng).toFixed(5) : 'sem coordenadas'}</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="casa-link" style="flex:1;min-width:240px" placeholder="Cola o link do Google Maps da tua casa (ou lat, lng)">
-    <button class="btn" onclick="guardarCasa()">Guardar casa</button></div></div>
-    <div class="caixa" id="transito-estado"><span class="vazio">A calcular os tempos…</span></div>`;
+  return `<div class="caixa"><h3>🏠 ${L('Ponto de partida (casa)', 'Starting point (home)')}</h3>
+    <p style="font-size:14px;color:#8b949e;margin:4px 0 10px">${L('Atual', 'Current')}: ${esc(c.nome || '—')} · ${c.lat != null ? (+c.lat).toFixed(5) + ', ' + (+c.lng).toFixed(5) : L('sem coordenadas', 'no coordinates')}</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="casa-link" style="flex:1;min-width:240px" placeholder="${L('Cola o link do Google Maps da tua casa (ou lat, lng)', 'Paste the Google Maps link of your home (or lat, lng)')}">
+    <button class="btn" onclick="guardarCasa()">${L('Guardar casa', 'Save home')}</button></div></div>
+    <div class="caixa" id="transito-estado"><span class="vazio">${L('A calcular os tempos…', 'Calculating travel times…')}</span></div>`;
 }
 
 async function atualizarEstadoTransito() {
@@ -470,23 +494,26 @@ async function atualizarEstadoTransito() {
   if (!el) return;
   try {
     const t = await (await fetch('/api/transito')).json();
-    if (!t.rotas) { el.innerHTML = '<span class="vazio">Sem destinos ou sem casa definida.</span>'; return; }
+    if (!t.rotas) { el.innerHTML = `<span class="vazio">${L('Sem destinos ou sem casa definida.', 'No destinations or no home set.')}</span>`; return; }
     el.innerHTML = (t.comTransito
-      ? '<p style="margin:0 0 8px">✅ Trânsito em tempo real (TomTom), atualizado a cada 5 minutos.</p>'
-      : `<p style="margin:0 0 8px">⚠️ <b>Sem trânsito em tempo real.</b> Os tempos abaixo são sem trânsito (OSRM). Para ativar:</p>
+      ? `<p style="margin:0 0 8px">✅ ${L('Trânsito em tempo real (TomTom), atualizado a cada 5 minutos.', 'Real-time traffic (TomTom), updated every 5 minutes.')}</p>`
+      : L(`<p style="margin:0 0 8px">⚠️ <b>Sem trânsito em tempo real.</b> Os tempos abaixo são sem trânsito (OSRM). Para ativar:</p>
          <ol style="margin:0 0 10px;font-size:14px;color:#c9d1d9"><li>Cria uma conta gratuita em <a href="https://developer.tomtom.com" target="_blank" style="color:#58a6ff">developer.tomtom.com</a> (2500 pedidos/dia grátis, chega bem).</li>
-         <li>Copia a "API Key" do painel.</li><li>Cola-a em <code>transito.tomtomChave</code> no <code>config.json</code> e reinicia o servidor.</li></ol>`) +
-      t.rotas.map(r => `<div class="item"><span class="quando">${r.erro ? '—' : r.minutos + ' min · ' + r.km + ' km'}</span><span class="o">${r.logo ? `<img src="${esc(r.logo)}" style="width:18px;height:18px;border-radius:3px;vertical-align:-3px">` : esc(r.icone)} ${esc(r.nome)}${r.atraso >= 3 ? ` <small style="display:inline;color:#f85149">+${r.atraso} min de trânsito</small>` : ''}</span></div>`).join('');
-  } catch (e) { el.innerHTML = '<span class="vazio">Não consegui calcular os tempos.</span>'; }
+         <li>Copia a "API Key" do painel.</li><li>Cola-a em <code>transito.tomtomChave</code> no <code>config.json</code> e reinicia o servidor.</li></ol>`,
+        `<p style="margin:0 0 8px">⚠️ <b>No real-time traffic.</b> The times below are without traffic (OSRM). To turn it on:</p>
+         <ol style="margin:0 0 10px;font-size:14px;color:#c9d1d9"><li>Create a free account at <a href="https://developer.tomtom.com" target="_blank" style="color:#58a6ff">developer.tomtom.com</a> (2,500 free requests/day, plenty).</li>
+         <li>Copy the "API Key" from the dashboard.</li><li>Paste it into <code>transito.tomtomChave</code> in <code>config.json</code> and restart the server.</li></ol>`)) +
+      t.rotas.map(r => `<div class="item"><span class="quando">${r.erro ? '—' : r.minutos + ' min · ' + r.km + ' km'}</span><span class="o">${r.logo ? `<img src="${esc(r.logo)}" style="width:18px;height:18px;border-radius:3px;vertical-align:-3px">` : esc(r.icone)} ${esc(r.nome)}${r.atraso >= 3 ? ` <small style="display:inline;color:#f85149">+${r.atraso} ${L('min de trânsito', 'min of traffic')}</small>` : ''}</span></div>`).join('');
+  } catch (e) { el.innerHTML = `<span class="vazio">${L('Não consegui calcular os tempos.', "Couldn't calculate the travel times.")}</span>`; }
 }
 
 window.guardarCasa = async () => {
   const t = document.getElementById('casa-link').value.trim();
-  if (!t) return mostrar('Cola primeiro o link', true);
+  if (!t) return mostrar(L('Cola primeiro o link', 'Paste the link first'), true);
   const c = await coordenadasDe(t);
-  if (!c) return mostrar('Não encontrei coordenadas nesse link', true);
-  familia.casa = { nome: 'Casa', lat: c.lat, lng: c.lng };
-  await guardar('Casa guardada');
+  if (!c) return mostrar(L('Não encontrei coordenadas nesse link', "Couldn't find coordinates in that link"), true);
+  familia.casa = { nome: L('Casa', 'Home'), lat: c.lat, lng: c.lng };
+  await guardar(L('Casa guardada', 'Home saved'));
 };
 
 // Logótipo de um destino: ficheiro do computador/telemóvel ou link de uma imagem
@@ -495,10 +522,10 @@ async function enviarLogo(id, corpo, metodo) {
     method: metodo || 'POST', headers: { 'Content-Type': 'application/json', 'X-Pin': localStorage.getItem('pin') || '' },
     body: corpo ? JSON.stringify(corpo) : undefined
   });
-  if (r.status === 401) { const pin = prompt('PIN de gestão:'); if (pin != null) { localStorage.setItem('pin', pin); return enviarLogo(id, corpo, metodo); } return; }
+  if (r.status === 401) { const pin = prompt(L('PIN de gestão:', 'Management PIN:')); if (pin != null) { localStorage.setItem('pin', pin); return enviarLogo(id, corpo, metodo); } return; }
   const j = await r.json();
-  if (!r.ok) return mostrar('Erro: ' + j.erro, true);
-  mostrar(metodo === 'DELETE' ? 'Logo removido' : 'Logo guardado ✓');
+  if (!r.ok) return mostrar(L('Erro: ', 'Error: ') + j.erro, true);
+  mostrar(metodo === 'DELETE' ? L('Logo removido', 'Logo removed') : L('Logo guardado ✓', 'Logo saved ✓'));
   await carregar();
 }
 window.logoFicheiro = id => {
@@ -513,14 +540,17 @@ window.logoFicheiro = id => {
   inp.click();
 };
 window.logoLink = id => {
-  const url = prompt('Link da imagem do logo (clica com o botão direito na imagem → "Copiar endereço da imagem"):');
+  const url = prompt(L('Link da imagem do logo (clica com o botão direito na imagem → "Copiar endereço da imagem"):', 'Logo image link (right-click the image → "Copy image address"):'));
   if (url) enviarLogo(id, { url: url.trim() });
 };
-window.logoApagar = id => { if (confirm('Remover o logo?')) enviarLogo(id, null, 'DELETE'); };
+window.logoApagar = id => { if (confirm(L('Remover o logo?', 'Remove the logo?'))) enviarLogo(id, null, 'DELETE'); };
 
 // ---------- Horários da turma ----------
 
-const DIAS_UTEIS = [['segunda', 'Seg'], ['terca', 'Ter'], ['quarta', 'Qua'], ['quinta', 'Qui'], ['sexta', 'Sex']];
+// a chave (1.º elemento) é guardada; o 2.º é só o nome mostrado
+const DIAS_UTEIS = [['segunda', L('Seg', 'Mon')], ['terca', L('Ter', 'Tue')], ['quarta', L('Qua', 'Wed')], ['quinta', L('Qui', 'Thu')], ['sexta', L('Sex', 'Fri')]];
+// 'Intervalo' e 'Almoço' são valores guardados em tempos[].pausa
+const NOMES_PAUSA = { Intervalo: L('Intervalo', 'Break'), 'Almoço': L('Almoço', 'Lunch') };
 let horarioFilho = null;
 
 function modeloHorario(quem) {
@@ -542,9 +572,9 @@ function desenharHorarios(el) {
   const abas = '<div class="filtros">' + nomes.map(n => `<button class="filtro ${n === horarioFilho ? 'ativo' : ''}" onclick="escolherHorario('${esc(n)}')">${esc(n)}</button>`).join('') + '</div>';
   const h = horarioAtual();
   if (!h) {
-    el.innerHTML = abas + `<div class="caixa"><p>${esc(horarioFilho)} ainda não tem horário da turma.</p>
-      <p style="font-size:14px;color:#8b949e">Com o horário, o dashboard mostra a hora de entrada e saída, a AEC do dia e o que levar (ex.: equipamento nos dias de Educação Física).</p>
-      <button class="btn" onclick="criarHorario()">Criar horário</button></div>`;
+    el.innerHTML = abas + `<div class="caixa"><p>${esc(horarioFilho)} ${L('ainda não tem horário da turma.', "doesn't have a class timetable yet.")}</p>
+      <p style="font-size:14px;color:#8b949e">${L('Com o horário, o dashboard mostra a hora de entrada e saída, a AEC do dia e o que levar (ex.: equipamento nos dias de Educação Física).', "With the timetable, the dashboard shows drop-off and pick-up times, the day's after-school activity (AEC) and what to bring (e.g. sports kit on PE days).")}</p>
+      <button class="btn" onclick="criarHorario()">${L('Criar horário', 'Create timetable')}</button></div>`;
     return;
   }
   const disciplinas = [...new Set(Object.values(h.aulas).flat().filter(Boolean))].sort();
@@ -553,23 +583,24 @@ function desenharHorarios(el) {
     return `<tr data-i="${i}" class="${t.aec ? 'aec' : ''}">
       <td><input type="time" class="t-ini" value="${esc(t.inicio)}"></td>
       <td><input type="time" class="t-fim" value="${esc(t.fim)}"></td>
-      <td><select class="t-tipo" onchange="lerHorario();desenhar()">${[['aula', 'Aula'], ['aec', 'AEC'], ['Intervalo', 'Intervalo'], ['Almoço', 'Almoço']].map(([v, n]) => `<option value="${v}" ${v === tipo ? 'selected' : ''}>${n}</option>`).join('')}</select></td>
-      ${DIAS_UTEIS.map(([k]) => t.pausa ? `<td class="pausa">${esc(t.pausa)}</td>` : `<td><input list="lista-disciplinas" class="t-aula" data-dia="${k}" value="${esc((h.aulas[k] || [])[i] || '')}"></td>`).join('')}
-      <td><button class="btn perigo" onclick="removerTempo(${i})" title="Remover tempo">✕</button></td></tr>`;
+      <td><select class="t-tipo" onchange="lerHorario();desenhar()">${[['aula', L('Aula', 'Class')], ['aec', 'AEC'], ['Intervalo', NOMES_PAUSA.Intervalo], ['Almoço', NOMES_PAUSA['Almoço']]].map(([v, n]) => `<option value="${v}" ${v === tipo ? 'selected' : ''}>${n}</option>`).join('')}</select></td>
+      ${DIAS_UTEIS.map(([k]) => t.pausa ? `<td class="pausa">${esc(NOMES_PAUSA[t.pausa] || t.pausa)}</td>` : `<td><input list="lista-disciplinas" class="t-aula" data-dia="${k}" value="${esc((h.aulas[k] || [])[i] || '')}"></td>`).join('')}
+      <td><button class="btn perigo" onclick="removerTempo(${i})" title="${L('Remover tempo', 'Remove period')}">✕</button></td></tr>`;
   }).join('');
   el.innerHTML = abas + `<div class="caixa">
-    <label>Escola<input id="h-escola" class="w-l" style="width:100%;max-width:520px" value="${esc(h.escola || '')}"></label>
+    <label>${L('Escola', 'School')}<input id="h-escola" class="w-l" style="width:100%;max-width:520px" value="${esc(h.escola || '')}"></label>
     <div class="tabela"><table id="tabela-horario">
-      <tr><th style="width:96px">Início</th><th style="width:96px">Fim</th><th style="width:110px">Tipo</th>${DIAS_UTEIS.map(([, n]) => `<th>${n}</th>`).join('')}<th></th></tr>
+      <tr><th style="width:96px">${L('Início', 'Start')}</th><th style="width:96px">${L('Fim', 'End')}</th><th style="width:110px">${L('Tipo', 'Type')}</th>${DIAS_UTEIS.map(([, n]) => `<th>${n}</th>`).join('')}<th></th></tr>
       ${linhas}</table></div>
-    <button class="btn sec" onclick="adicionarTempo()">+ Tempo</button>
-    <div class="grupo" style="margin-top:20px">O que levar, por disciplina (aparece no dashboard nesses dias)</div>
-    <div style="display:flex;flex-wrap:wrap;gap:10px">${disciplinas.map(d => `<label style="flex:1 1 260px">${esc(d)}<input class="levar" data-d="${esc(d)}" value="${esc((h.levar || {})[d] || '')}" placeholder="—"></label>`).join('') || '<span class="vazio">Preenche primeiro as disciplinas.</span>'}</div>
-    <label style="margin-top:14px">Notas (professores, contactos…)<textarea id="h-notas">${esc(h.notas || '')}</textarea></label>
-    <div class="botoes" style="margin-top:14px"><button class="btn" onclick="guardarHorario()">Guardar horário</button>
-      <button class="btn perigo" onclick="apagarHorario()">Apagar horário</button></div>
+    <button class="btn sec" onclick="adicionarTempo()">+ ${L('Tempo', 'Period')}</button>
+    <div class="grupo" style="margin-top:20px">${L('O que levar, por disciplina (aparece no dashboard nesses dias)', 'What to bring, per subject (shown on the dashboard on those days)')}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px">${disciplinas.map(d => `<label style="flex:1 1 260px">${esc(d)}<input class="levar" data-d="${esc(d)}" value="${esc((h.levar || {})[d] || '')}" placeholder="—"></label>`).join('') || `<span class="vazio">${L('Preenche primeiro as disciplinas.', 'Fill in the subjects first.')}</span>`}</div>
+    <label style="margin-top:14px">${L('Notas (professores, contactos…)', 'Notes (teachers, contacts…)')}<textarea id="h-notas">${esc(h.notas || '')}</textarea></label>
+    <div class="botoes" style="margin-top:14px"><button class="btn" onclick="guardarHorario()">${L('Guardar horário', 'Save timetable')}</button>
+      <button class="btn perigo" onclick="apagarHorario()">${L('Apagar horário', 'Delete timetable')}</button></div>
     </div>
-    <datalist id="lista-disciplinas">${['Português', 'Matemática', 'Estudo do Meio', 'Inglês', 'Educação Física', 'Educação Artística', 'Apoio ao Estudo', 'AFD', 'Música', 'Dança', 'Expressão Plástica'].concat(disciplinas).filter((v, i, a) => a.indexOf(v) === i).map(d => `<option value="${esc(d)}">`).join('')}</datalist>`;
+    <datalist id="lista-disciplinas">${L(['Português', 'Matemática', 'Estudo do Meio', 'Inglês', 'Educação Física', 'Educação Artística', 'Apoio ao Estudo', 'AFD', 'Música', 'Dança', 'Expressão Plástica'],
+      ['English', 'Maths', 'Science', 'Portuguese', 'PE', 'Art', 'Homework club', 'AFD', 'Music', 'Dance', 'Arts and crafts']).concat(disciplinas).filter((v, i, a) => a.indexOf(v) === i).map(d => `<option value="${esc(d)}">`).join('')}</datalist>`;
 }
 
 // Lê o que está no ecrã para o horário em memória (sem gravar)
@@ -614,23 +645,25 @@ window.removerTempo = i => {
 };
 window.guardarHorario = async () => {
   lerHorario();
-  await guardar('Horário guardado');
+  await guardar(L('Horário guardado', 'Timetable saved'));
 };
 window.apagarHorario = async () => {
-  if (!confirm(`Apagar o horário de ${horarioFilho}?`)) return;
+  if (!confirm(L(`Apagar o horário de ${horarioFilho}?`, `Delete ${horarioFilho}'s timetable?`))) return;
   familia.horarios = familia.horarios.filter(h => h.quem !== horarioFilho);
-  await guardar('Horário apagado');
+  await guardar(L('Horário apagado', 'Timetable deleted'));
 };
 
 async function desenharNoite(el) {
-  el.innerHTML = '<div class="vazio">A verificar a pasta de fotos…</div>';
+  el.innerHTML = `<div class="vazio">${L('A verificar a pasta de fotos…', 'Checking the photo folder…')}</div>`;
   const e = await (await fetch('/api/fotos/estado')).json();
-  el.innerHTML = `<div class="caixa"><h3>🌙 Modo noite</h3>
-    <p>À noite, em vez de escurecer, o iPad mostra fotos aleatórias da família com o relógio no canto. Tocar no ecrã mostra o dashboard durante 2 minutos.</p>
-    <div class="item"><span class="quando">Origem</span><span class="o">${esc(e.origem)}</span></div>
-    <div class="item"><span class="quando">Fotos</span><span class="o">${e.ativo ? e.total + ' encontradas' : 'desligado'}${e.erro ? `<small style="color:#f85149">${esc(e.erro)}</small>` : ''}</span></div>
-    <p style="margin-top:14px"><a class="btn" href="/#noite" target="_blank">Pré-visualizar no dashboard</a></p></div>
-    <div class="caixa"><p style="margin:0;font-size:14px;color:#8b949e">Configura em <code>modoNoite</code> no <code>config.json</code>: o horário (<code>inicio</code>, <code>fim</code>), quantos segundos fica cada foto (<code>intervaloSegundos</code>) e a origem das fotos (uma pasta do Google Drive). O README explica os passos.</p></div>`;
+  el.innerHTML = `<div class="caixa"><h3>🌙 ${L('Modo noite', 'Night mode')}</h3>
+    <p>${L('À noite, em vez de escurecer, o iPad mostra fotos aleatórias da família com o relógio no canto. Tocar no ecrã mostra o dashboard durante 2 minutos.', 'At night, instead of going dark, the iPad shows random family photos with the clock in the corner. Tapping the screen shows the dashboard for 2 minutes.')}</p>
+    <div class="item"><span class="quando">${L('Origem', 'Source')}</span><span class="o">${esc(e.origem)}</span></div>
+    <div class="item"><span class="quando">${L('Fotos', 'Photos')}</span><span class="o">${e.ativo ? e.total + L(' encontradas', ' found') : L('desligado', 'off')}${e.erro ? `<small style="color:#f85149">${esc(e.erro)}</small>` : ''}</span></div>
+    <p style="margin-top:14px"><a class="btn" href="/#noite" target="_blank">${L('Pré-visualizar no dashboard', 'Preview on the dashboard')}</a></p></div>
+    <div class="caixa"><p style="margin:0;font-size:14px;color:#8b949e">${L(
+      'Configura em <code>modoNoite</code> no <code>config.json</code>: o horário (<code>inicio</code>, <code>fim</code>), quantos segundos fica cada foto (<code>intervaloSegundos</code>) e a origem das fotos (uma pasta do Google Drive). O README explica os passos.',
+      'Configure it in <code>modoNoite</code> in <code>config.json</code>: the schedule (<code>inicio</code>, <code>fim</code>), how many seconds each photo stays (<code>intervaloSegundos</code>) and the photo source (a Google Drive folder). The README explains the steps.')}</p></div>`;
 }
 
 function desenharICal(el) {
@@ -640,10 +673,24 @@ function desenharICal(el) {
   const linha = (rotulo, q) => {
     const qs = q ? `?quem=${encodeURIComponent(q)}` : '';
     return `<div class="url"><b style="width:110px">${rotulo}</b><code>http://${esc(base + qs)}</code>
-      <a class="btn" href="webcal://${esc(base + qs)}">Subscrever</a>
-      <button class="btn sec" onclick="navigator.clipboard.writeText('http://${esc(base + qs)}');mostrar('Link copiado')">Copiar</button></div>`;
+      <a class="btn" href="webcal://${esc(base + qs)}">${L('Subscrever', 'Subscribe')}</a>
+      <button class="btn sec" onclick="navigator.clipboard.writeText('http://${esc(base + qs)}');mostrar(L('Link copiado', 'Link copied'))">${L('Copiar', 'Copy')}</button></div>`;
   };
-  el.innerHTML = `<div class="caixa"><h3>Tudo o que crias aqui aparece no calendário do iPhone</h3>
+  el.innerHTML = EN ? `<div class="caixa"><h3>Everything you create here shows up in the iPhone calendar</h3>
+    <p>The server publishes a calendar with the weekly activities (as repeating events), the appointments and events (with an alert the day before for appointments) and the birthdays.
+    The iPhone fetches the changes on its own.</p>
+    ${linha('Whole family', '')}
+    ${filhos().map(f => linha(f, f)).join('')}
+    </div>
+    <div class="caixa"><h3>How to subscribe on the iPhone</h3><ol>
+      <li>On the iPhone, open this page in Safari (<code>http://${esc(host)}/gerir</code>), go to this tab and tap <b>Subscribe</b>.</li>
+      <li>Alternatively: <b>Settings → Calendar → Accounts → Add Account → Other → Add Subscribed Calendar</b> and paste the link.</li>
+      <li>Under <i>Account</i>, choose <b>iCloud</b> so the calendar also shows up on the iPad, Mac and Apple Watch.</li>
+      <li>In <b>Settings → Calendar → Accounts → Fetch New Data</b>, choose "Every 15 Minutes".</li>
+      <li>Repeat on the other parent's iPhone, or anyone else's.</li>
+    </ol>
+    <p>⚠️ The iPhone only updates when it is on the home network, because the server is local. Away from home it keeps showing what it already had. The README explains how to make the link reachable away from home too.</p></div>`
+  : `<div class="caixa"><h3>Tudo o que crias aqui aparece no calendário do iPhone</h3>
     <p>O servidor publica um calendário com as atividades semanais (como eventos que se repetem), as consultas e eventos (com alerta na véspera para consultas) e os aniversários.
     O iPhone vai buscar as alterações sozinho.</p>
     ${linha('Toda a família', '')}
@@ -669,19 +716,19 @@ window.cancelar = () => { aEditar = null; desenhar(); };
 window.apagar = async id => {
   const s = SEPARADORES[separador], chave = s.chave || 'id';
   const x = familia[separador].find(i => i[chave] === id);
-  if (!x || !confirm(`Apagar "${x.titulo || x.atividade || x.nome || x.descricao}"?`)) return;
+  if (!x || !confirm(L(`Apagar "${x.titulo || x.atividade || x.nome || x.descricao}"?`, `Delete "${x.titulo || x.atividade || x.nome || x.descricao}"?`))) return;
   if (separador === 'filhos' && ['atividades', 'eventos', 'aniversarios'].some(k => familia[k].some(i => i.quem === x.nome)) &&
-      !confirm(`${x.nome} ainda tem entradas associadas. Apagar mesmo assim?`)) return;
+      !confirm(L(`${x.nome} ainda tem entradas associadas. Apagar mesmo assim?`, `${x.nome} still has linked entries. Delete anyway?`))) return;
   familia[separador] = familia[separador].filter(i => i !== x);
-  await guardar('Apagado');
+  await guardar(L('Apagado', 'Deleted'));
 };
 
 window.apagarPassados = async () => {
   const hoje = hojeISO();
   const n = familia.eventos.filter(e => e.data < hoje).length;
-  if (!confirm(`Apagar ${n} eventos passados?`)) return;
+  if (!confirm(L(`Apagar ${n} eventos passados?`, `Delete ${n} past events?`))) return;
   familia.eventos = familia.eventos.filter(e => e.data >= hoje);
-  await guardar('Eventos passados apagados');
+  await guardar(L('Eventos passados apagados', 'Past events deleted'));
 };
 
 window.guardarItem = async ev => {
@@ -705,12 +752,12 @@ window.guardarItem = async ev => {
     s.campos.forEach(c => { if (!(c.k in v)) delete novo[c.k]; });
     lista[i] = novo;
   } else {
-    if (separador === 'filhos' && lista.some(f => f.nome === v.nome)) return mostrar('Já existe', true);
+    if (separador === 'filhos' && lista.some(f => f.nome === v.nome)) return mostrar(L('Já existe', 'Already exists'), true);
     if (separador !== 'filhos') v.id = Math.random().toString(16).slice(2, 10);
     lista.push(v);
   }
   aEditar = null;
-  await guardar(aEditar ? 'Guardado' : 'Guardado ✓');
+  await guardar(aEditar ? L('Guardado', 'Saved') : L('Guardado ✓', 'Saved ✓'));
 };
 
 async function guardar(msg) {
@@ -720,12 +767,12 @@ async function guardar(msg) {
     body: JSON.stringify(familia)
   });
   if (r.status === 401) {
-    const pin = prompt('PIN de gestão:');
+    const pin = prompt(L('PIN de gestão:', 'Management PIN:'));
     if (pin != null) { localStorage.setItem('pin', pin); return guardar(msg); }
     return carregar();
   }
   const j = await r.json();
-  if (!r.ok) { mostrar('Erro: ' + j.erro, true); return carregar(); }
+  if (!r.ok) { mostrar(L('Erro: ', 'Error: ') + j.erro, true); return carregar(); }
   familia = j.familia;
   mostrar(msg);
   desenhar();

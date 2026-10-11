@@ -9,6 +9,21 @@
   var direcaoVento = C.direcaoVento, nivelUV = C.nivelUV, nivelAr = C.nivelAr, nivelPolen = C.nivelPolen;
   var pad = C.pad, esc = C.esc, chaveDia = C.chaveDia, deChave = C.deChave, hhmm = C.hhmm, chip = C.chip;
   var nomeDia = C.nomeDia, euros = C.euros, getJSON = C.getJSON;
+  var L = C.L, EN = C.EN, dataCurta = C.dataCurta;
+
+  // "Domingo, 12 de outubro" / "Sunday, October 12"
+  function dataLonga(a) {
+    return EN ? DIAS[a.getDay()] + ', ' + MESES[a.getMonth()] + ' ' + a.getDate() : DIAS[a.getDay()] + ', ' + a.getDate() + ' de ' + MESES[a.getMonth()];
+  }
+
+  // textos fixos do index.html (elementos com data-en)
+  function traduzirPagina() {
+    document.documentElement.lang = EN ? 'en' : 'pt-PT';
+    if (!EN) return;
+    var els = document.querySelectorAll('[data-en]');
+    for (var i = 0; i < els.length; i++) els[i].innerHTML = els[i].getAttribute('data-en');
+  }
+  traduzirPagina();
 
   // Afinações do ecrã: vêm do servidor (config.json → "ecra"); estes são os valores até à primeira resposta
   var cfgEcra = {
@@ -36,7 +51,8 @@
     var k = chaveDia(a);
     if (k !== ultimoDia) {
       ultimoDia = k;
-      $('data').innerHTML = '<b>' + DIAS[a.getDay()] + '</b>, ' + a.getDate() + ' de ' + MESES[a.getMonth()];
+      $('data').innerHTML = EN ? '<b>' + DIAS[a.getDay()] + '</b>, ' + MESES[a.getMonth()] + ' ' + a.getDate()
+        : '<b>' + DIAS[a.getDay()] + '</b>, ' + a.getDate() + ' de ' + MESES[a.getMonth()];
       if (dados) desenhar(dados); // muda "Hoje"/"Amanhã" à meia-noite
     }
     noite = eNoite(a) || location.hash === '#noite';
@@ -45,7 +61,7 @@
     if (cfgAgendaFotos.ativo && !noite && Date.now() >= agFoto.proxima) trocarFotoAgenda();
     if (noite) {
       $('fotos-hora').innerHTML = hhmm(a);
-      $('fotos-data').innerHTML = DIAS[a.getDay()] + ', ' + a.getDate() + ' de ' + MESES[a.getMonth()];
+      $('fotos-data').innerHTML = dataLonga(a);
       if (cfgNoite.fotos && !acordadoAte && Date.now() >= proximaFotoEm) trocarFoto();
     } else if (temFoto) {
       limparFotos();
@@ -143,7 +159,7 @@
 
   function desenharMeteo(m) {
     if (!m || m.erro) {
-      $('agora-desc').innerHTML = 'Sem meteorologia';
+      $('agora-desc').innerHTML = L('Sem meteorologia', 'No weather data');
       return;
     }
     var a = m.atual;
@@ -163,7 +179,7 @@
     for (i = 0; i < m.horas.length; i += 2) {
       var h = m.horas[i], seg = m.horas[i + 1];
       var chuva2 = Math.max(h.chuva || 0, seg ? seg.chuva || 0 : 0);
-      html += '<div class="hr' + (i >= 16 ? ' mais' : '') + '"><div class="h">' + (i === 0 ? 'Agora' : pad(h.hora) + 'h') + '</div>' +
+      html += '<div class="hr' + (i >= 16 ? ' mais' : '') + '"><div class="h">' + (i === 0 ? L('Agora', 'Now') : pad(h.hora) + 'h') + '</div>' +
         '<div class="i">' + tempo(h.codigo)[h.dia ? 0 : 1] + '</div>' +
         '<div class="t">' + h.temp + '°</div>' +
         '<div class="c">' + (chuva2 >= 10 ? chuva2 + '%' : '') + '</div></div>';
@@ -176,14 +192,14 @@
     for (i = 0; i < m.dias.length && i < 6; i++) {
       var d = m.dias[i];
       var dt = deChave(d.dia);
-      var nome = d.dia === hojeK ? 'Hoje' : DIAS_CURTOS[dt.getDay()] + ' ' + dt.getDate();
+      var nome = d.dia === hojeK ? L('Hoje', 'Today') : DIAS_CURTOS[dt.getDay()] + ' ' + dt.getDate();
       html += '<div class="dia-prev' + (d.dia === hojeK ? ' hoje' : '') + '">' +
         '<div class="nome">' + nome + '</div>' +
         '<span class="icone">' + tempo(d.codigo)[0] + '</span>' +
         '<div class="meio">' + d.max + '°<span class="min">' + d.min + '°</span></div>' +
         '<div class="chuva">' + (d.chuva > 0 ? '💧' + d.chuva + '%' + (d.mm >= 0.5 ? ' ' + d.mm + 'mm' : '') : '') + '</div>' +
         '<div class="extra">💨 ' + d.vento + ' km/h · UV ' + d.uv + '</div>' +
-        '<div class="det-exp">💨 rajadas ' + d.rajada + ' km/h<br>🌅 ' + d.nascer + ' · 🌇 ' + d.por + '</div>' +
+        '<div class="det-exp">💨 ' + L('rajadas ', 'gusts ') + d.rajada + ' km/h<br>🌅 ' + d.nascer + ' · 🌇 ' + d.por + '</div>' +
         '</div>';
     }
     $('previsao').innerHTML = html;
@@ -195,10 +211,10 @@
     var a = m.atual, hoje = m.dias[0] || {}, t = tempo(a.codigo), i;
     var hojeK = chaveDia(new Date());
     var html = '<div class="td-agora"><span class="td-ic">' + (a.dia ? t[0] : t[1]) + '</span><span class="td-temp">' + a.temp + '°</span>' +
-      '<span class="td-info"><b>' + esc(t[2]) + '</b> · sensação ' + a.sensacao + '° · humidade ' + a.humidade + '%<br>' +
-      '💨 ' + a.vento + ' km/h ' + direcaoVento(a.direcao) + ' (rajadas ' + a.rajada + ') · ☀️ UV ' + Math.round(a.uv) + ' ' + nivelUV(a.uv) + ' (máx ' + hoje.uv + ')' +
+      '<span class="td-info"><b>' + esc(t[2]) + '</b> · ' + L('sensação ', 'feels like ') + a.sensacao + '° · ' + L('humidade ', 'humidity ') + a.humidade + '%<br>' +
+      '💨 ' + a.vento + ' km/h ' + direcaoVento(a.direcao) + ' (' + L('rajadas ', 'gusts ') + a.rajada + ') · ☀️ UV ' + Math.round(a.uv) + ' ' + nivelUV(a.uv) + ' (' + L('máx ', 'max ') + hoje.uv + ')' +
       ' · 🌅 ' + hoje.nascer + ' 🌇 ' + hoje.por +
-      (m.ar && m.ar.aqi != null ? ' · 🍃 ar ' + nivelAr(m.ar.aqi) + (m.ar.polen ? ' · pólen ' + nivelPolen(m.ar.polen.valor) : '') : '') + '</span></div>';
+      (m.ar && m.ar.aqi != null ? ' · 🍃 ' + L('ar ', 'air ') + nivelAr(m.ar.aqi) + (m.ar.polen ? ' · ' + L('pólen ', 'pollen ') + nivelPolen(m.ar.polen.valor) : '') : '') + '</span></div>';
 
     // resumo da semana
     var lo = 99, hi = -99, quente = null, chuvosos = [], mm = 0, sol = 0;
@@ -210,10 +226,10 @@
       mm += d.mm || 0;
       sol += d.sol || 0;
     }
-    function nomeCurto(d) { var dt = deChave(d.dia); return d.dia === hojeK ? 'hoje' : DIAS_CURTOS[dt.getDay()].toLowerCase() + ' ' + dt.getDate(); }
-    var chuvaTxt = chuvosos.length ? '☔ chuva provável: ' + chuvosos.map(nomeCurto).join(', ') + (mm >= 1 ? ' (' + Math.round(mm) + ' mm)' : '') : '☀️ sem chuva prevista';
-    html += '<div class="td-titulo">Próximos 7 dias</div><div class="td-resumo">🌡 ' + lo + '° a ' + hi + '° · mais quente: ' + nomeCurto(quente) + ' (' + quente.max + '°) · ' +
-      chuvaTxt + ' · ' + Math.round(sol) + ' h de sol</div>';
+    function nomeCurto(d) { var dt = deChave(d.dia); return d.dia === hojeK ? L('hoje', 'today') : DIAS_CURTOS[dt.getDay()].toLowerCase() + ' ' + dt.getDate(); }
+    var chuvaTxt = chuvosos.length ? '☔ ' + L('chuva provável: ', 'rain likely: ') + chuvosos.map(nomeCurto).join(', ') + (mm >= 1 ? ' (' + Math.round(mm) + ' mm)' : '') : '☀️ ' + L('sem chuva prevista', 'no rain expected');
+    html += '<div class="td-titulo">' + L('Próximos 7 dias', 'Next 7 days') + '</div><div class="td-resumo">🌡 ' + lo + L('° a ', '° to ') + hi + '° · ' + L('mais quente: ', 'warmest: ') + nomeCurto(quente) + ' (' + quente.max + '°) · ' +
+      chuvaTxt + ' · ' + Math.round(sol) + L(' h de sol', ' h of sun') + '</div>';
 
     // um dia por linha, com barra mínima–máxima à escala da semana
     var amp = Math.max(1, hi - lo);
@@ -221,12 +237,12 @@
       var dd = m.dias[i], dt2 = deChave(dd.dia);
       var esq = Math.round((dd.min - lo) / amp * 100), dir = Math.round((hi - dd.max) / amp * 100);
       html += '<div class="dl' + (dd.dia === hojeK ? ' hoje' : '') + '">' +
-        '<span class="dl-dia">' + (dd.dia === hojeK ? 'Hoje' : DIAS[dt2.getDay()]) + '<small>' + dt2.getDate() + ' ' + MESES_CURTOS[dt2.getMonth()] + '</small></span>' +
+        '<span class="dl-dia">' + (dd.dia === hojeK ? L('Hoje', 'Today') : DIAS[dt2.getDay()]) + '<small>' + dataCurta(dt2) + '</small></span>' +
         '<span class="dl-ic">' + tempo(dd.codigo)[0] + '</span>' +
-        '<span class="dl-desc">' + esc(tempo(dd.codigo)[2]) + '<small>☀️ ' + dd.sol + ' h de sol</small></span>' +
+        '<span class="dl-desc">' + esc(tempo(dd.codigo)[2]) + '<small>☀️ ' + dd.sol + L(' h de sol', ' h of sun') + '</small></span>' +
         '<span class="dl-chuva' + (dd.chuva >= 40 ? ' forte' : '') + '">💧 ' + dd.chuva + '%<small>' + (dd.mm >= 0.1 ? dd.mm + ' mm · ' + dd.horasChuva + ' h' : '—') + '</small></span>' +
         '<span class="dl-temp"><span class="dl-min">' + dd.min + '°</span><span class="dl-barra"><span class="dl-ench" style="left:' + esq + '%;right:' + dir + '%"></span></span><span class="dl-max">' + dd.max + '°</span></span>' +
-        '<span class="dl-vento">💨 ' + dd.vento + ' ' + direcaoVento(dd.direcao) + '<small>rajadas ' + dd.rajada + '</small></span>' +
+        '<span class="dl-vento">💨 ' + dd.vento + ' ' + direcaoVento(dd.direcao) + '<small>' + L('rajadas ', 'gusts ') + dd.rajada + '</small></span>' +
         '<span class="dl-uv">UV ' + dd.uv + '<small>' + nivelUV(dd.uv) + '</small></span>' +
         '<span class="dl-sol">🌅 ' + dd.nascer + '<small>🌇 ' + dd.por + '</small></span>' +
         '</div>';
@@ -244,8 +260,8 @@
       for (var i = 0; i < avisos.length; i++) {
         var w = avisos[i];
         var fim = new Date(w.fim);
-        html += '<span class="alerta ' + esc(w.nivel) + '">⚠️ Aviso ' + (NIVEL_AVISO[w.nivel] || '') + ': ' + esc(w.tipo) +
-          ' até ' + DIAS_CURTOS[fim.getDay()] + ' ' + hhmm(fim) + '</span>';
+        html += '<span class="alerta ' + esc(w.nivel) + '">⚠️ ' + (EN ? (NIVEL_AVISO[w.nivel] || '') + ' warning' : 'Aviso ' + (NIVEL_AVISO[w.nivel] || '')) + ': ' + esc(w.tipo) +
+          L(' até ', ' until ') + DIAS_CURTOS[fim.getDay()] + ' ' + hhmm(fim) + '</span>';
       }
       var dicas = C.dicasTempo(m);
       for (i = 0; i < dicas.length; i++) html += '<span class="alerta">' + dicas[i] + '</span>';
@@ -273,7 +289,7 @@
     for (i = 0; i < aniversarios.length; i++) if (aniversarios[i].faltam <= cfgEcra.diasAgenda) especiais.push({ dia: aniversarios[i].dia, aniv: aniversarios[i] });
     for (i = 0; i < prazos.length; i++) {
       if (prazos[i].atrasado) {
-        if (!n++) html += '<div class="ag-dia atrasado">Atrasados</div>';
+        if (!n++) html += '<div class="ag-dia atrasado">' + L('Atrasados', 'Overdue') + '</div>';
         html += linhaPrazo(prazos[i]);
       } else if (prazos[i].faltam <= cfgEcra.diasAgenda) especiais.push({ dia: prazos[i].data, prazo: prazos[i] });
     }
@@ -301,12 +317,12 @@
       }
       var icone = e.tipo ? (ICONE_TIPO[e.tipo] || '') + ' ' : '';
       html += '<div class="ev"><span class="barra" style="background:' + esc(e.cor || '#58a6ff') + '"></span>' +
-        '<span class="h">' + (e.diaInteiro ? 'dia' : hhmm(new Date(e.inicio))) + '</span>' +
+        '<span class="h">' + (e.diaInteiro ? L('dia', 'all day') : hhmm(new Date(e.inicio))) + '</span>' +
         '<span class="t">' + icone + esc(e.titulo) + (e.quem ? chip(e.quem, e.cor) : '') + '</span>' +
         (e.local ? '<span class="l">' + esc(e.local) + '</span>' : '') +
         '</div>';
     }
-    $('agenda').innerHTML = n ? html : '<div class="vazio">Sem compromissos nos próximos dias</div>';
+    $('agenda').innerHTML = n ? html : '<div class="vazio">' + L('Sem compromissos nos próximos dias', 'No appointments in the coming days') + '</div>';
   }
 
   function desenharAtividades(lista, dias, escolaDias) {
@@ -317,21 +333,21 @@
     for (off = 0; off < dias.length; off++) {
       var info = dias[off];
       var d = deChave(info.dia);
-      var curto = off === 0 ? 'hoje' : off === 1 ? 'amanhã' : DIAS_CURTOS[d.getDay()].toLowerCase();
+      var curto = off === 0 ? L('hoje', 'today') : off === 1 ? L('amanhã', 'tomorrow') : DIAS_CURTOS[d.getDay()].toLowerCase();
       if (off <= 1) {
         var escolaDoDia = '';
         for (i = 0; i < escolaDias.length; i++) {
           var e = escolaDias[i];
           if (e.dia !== info.dia) continue;
           var extra = [];
-          if (e.aec) extra.push('AEC ' + e.aec + ' até ' + e.saida);
+          if (e.aec) extra.push(L('AEC ', 'After-school ') + e.aec + L(' até ', ' until ') + e.saida);
           if (e.levar) extra.push('🎒 ' + e.levar);
-          escolaDoDia += '<div class="at escola"><span class="h">' + esc(e.entrada) + '</span>🏫 Escola até ' + esc(e.aec ? e.saidaSemAec || e.saida : e.saida) + chip(e.quem, e.cor) +
+          escolaDoDia += '<div class="at escola"><span class="h">' + esc(e.entrada) + '</span>🏫 ' + L('Escola até ', 'School until ') + esc(e.aec ? e.saidaSemAec || e.saida : e.saida) + chip(e.quem, e.cor) +
             (extra.length ? '<span class="lv">' + esc(extra.join(' · ')) + '</span>' : '') + '</div>';
         }
-        if (escolaDoDia) html += '<div class="at-dia' + (off === 0 ? ' hoje' : '') + '">' + (off === 0 ? 'Hoje' : 'Amanhã') + '</div>' + escolaDoDia;
+        if (escolaDoDia) html += '<div class="at-dia' + (off === 0 ? ' hoje' : '') + '">' + (off === 0 ? L('Hoje', 'Today') : L('Amanhã', 'Tomorrow')) + '</div>' + escolaDoDia;
       }
-      if (info.pausadas) pausas.push(curto.charAt(0).toUpperCase() + curto.slice(1) + ': ' + (info.feriado ? '🇵🇹 ' + info.feriado : info.interrupcao || 'pausa') + ' · ' + info.pausadas + ' em pausa');
+      if (info.pausadas) pausas.push(curto.charAt(0).toUpperCase() + curto.slice(1) + ': ' + (info.feriado ? '🇵🇹 ' + info.feriado : info.interrupcao || L('pausa', 'break')) + ' · ' + info.pausadas + L(' em pausa', ' paused'));
       for (i = 0; i < lista.length; i++) {
         var a = lista[i];
         if (a.dia !== info.dia) continue;
@@ -344,16 +360,16 @@
       var a = x.a.inicio || '99', b = y.a.inicio || '99';
       return a < b ? -1 : a > b ? 1 : 0;
     });
-    if (grupos.length || pausas.length) html += '<div class="at-dia">Esta semana</div>';
+    if (grupos.length || pausas.length) html += '<div class="at-dia">' + L('Esta semana', 'This week') + '</div>';
     for (i = 0; i < grupos.length; i++) {
       var g = grupos[i], ds = g.dias;
-      var quando = ds.length > 1 ? ds.slice(0, -1).join(', ') + ' e ' + ds[ds.length - 1] : ds[0];
+      var quando = ds.length > 1 ? ds.slice(0, -1).join(', ') + L(' e ', ' and ') + ds[ds.length - 1] : ds[0];
       html += '<div class="at"><span class="h">' + esc(g.a.inicio) + '</span>' + esc(g.a.atividade) + chip(g.a.quem, g.a.cor) +
         '<span class="qd">' + esc(quando) + '</span>' +
         (g.a.levar ? '<span class="lv">🎒 ' + esc(g.a.levar) + '</span>' : '') + '</div>';
     }
     for (i = 0; i < pausas.length; i++) html += '<div class="at-pausa">' + esc(pausas[i]) + '</div>';
-    if (!html) html = '<div class="vazio">Sem atividades esta semana</div>';
+    if (!html) html = '<div class="vazio">' + L('Sem atividades esta semana', 'No activities this week') + '</div>';
     $('atividades').innerHTML = html;
   }
 
@@ -366,7 +382,7 @@
     function junta(x) {
       if (x.dia !== alvo || !x.levar) return;
       if (!porQuem[x.quem]) { porQuem[x.quem] = { cor: x.cor, itens: [] }; ordem.push(x.quem); }
-      var partes = x.levar.split(/\s*,\s*|\s+e\s+/);
+      var partes = x.levar.split(/\s*,\s*|\s+(?:e|and)\s+/);
       for (j = 0; j < partes.length; j++) {
         var it = partes[j].trim();
         if (it && porQuem[x.quem].itens.indexOf(it) < 0) porQuem[x.quem].itens.push(it);
@@ -380,7 +396,7 @@
       html += '<div class="mo">' + chip(ordem[i], q.cor) + '<span class="it">' + esc(q.itens.join(', ')) + '</span></div>';
     }
     $('mochila').innerHTML = html;
-    $('mochila-quando').innerHTML = amanha ? '· amanhã' : '· hoje';
+    $('mochila-quando').innerHTML = '· ' + (amanha ? L('amanhã', 'tomorrow') : L('hoje', 'today'));
     classe($('painel-mochila'), 'ativo', !!html);
   }
 
@@ -404,14 +420,14 @@
       html += '<div class="tr ' + (r.erro ? 'sem-dados' : esc(r.estado)) + (r.principal === false ? ' tr-extra' : '') + '">' +
         '<span class="tr-nome">' + (r.logo ? '<img class="tr-logo" src="' + esc(r.logo) + '">' : esc(r.icone)) + ' ' + esc(r.nome) + '</span>' +
         (r.erro
-          ? '<span class="tr-min"><b>—</b></span><span class="tr-sub">sem rota</span>'
+          ? '<span class="tr-min"><b>—</b></span><span class="tr-sub">' + L('sem rota', 'no route') + '</span>'
           : '<span class="tr-min"><b>' + r.minutos + '</b> min' + (r.atraso >= 3 ? ' <span class="atr">+' + r.atraso + '</span>' : '') + '</span>' +
-            '<span class="tr-sub">chega ' + r.chegada + '<span class="det-exp"> · ' + String(r.km).replace('.', ',') + ' km' +
-            (t.comTransito ? ' · normal ' + r.normal + ' min' : '') + '</span></span>') +
+            '<span class="tr-sub">' + L('chega ', 'arrives ') + r.chegada + '<span class="det-exp"> · ' + (EN ? String(r.km) : String(r.km).replace('.', ',')) + ' km' +
+            (t.comTransito ? ' · ' + L('normal ', 'usually ') + r.normal + ' min' : '') + '</span></span>') +
         '</div>';
     }
     $('transito').innerHTML = html;
-    $('transito-info').innerHTML = (t.comTransito ? '' : '<span class="sem-tr">sem tempo real</span>') + hhmm(new Date(t.atualizado));
+    $('transito-info').innerHTML = (t.comTransito ? '' : '<span class="sem-tr">' + L('sem tempo real', 'no live traffic') + '</span>') + hhmm(new Date(t.atualizado));
   }
 
   // Frase inspiracional do dia (ZenQuotes, traduzida); muda todos os dias
@@ -423,7 +439,7 @@
 
   // Aniversários e prazos da casa no mesmo painel, ordenados por quantos dias faltam
   function linhaPrazo(p) {
-    var q = p.atrasado ? 'atrasado ' + (-p.faltam) + ' d' : p.faltam === 0 ? 'hoje' : p.faltam === 1 ? 'amanhã' : 'faltam ' + p.faltam + ' dias';
+    var q = p.atrasado ? L('atrasado ', 'overdue ') + (-p.faltam) + ' d' : p.faltam === 0 ? L('hoje', 'today') : p.faltam === 1 ? L('amanhã', 'tomorrow') : L('faltam ' + p.faltam + ' dias', 'in ' + p.faltam + ' days');
     return '<div class="ev prazo' + (p.atrasado ? ' atrasado' : p.faltam <= 7 ? ' breve' : '') + '"><span class="barra"></span>' +
       '<span class="h">' + p.icone + '</span><span class="t">' + esc(p.titulo) + (p.quem ? chip(p.quem, p.cor) : '') + '</span>' +
       '<span class="l">' + q + '</span></div>';
@@ -434,21 +450,21 @@
   function desenharFinancas(fin) {
     classe($('btn-fin'), 'oculto', !fin);
     if (!fin) { verFinancasAte = 0; aplicarClasses(); marcarMenu(); return; }
-    var html = '<div class="fin-total">Saldo total<b' + (fin.total < 0 ? ' class="neg"' : '') + '>' + euros(fin.total) + '</b></div>';
-    if (!fin.contas.length && !fin.pagamentos.length) html += '<div class="vazio">Ainda sem contas nem pagamentos. Acrescenta-os em ✏️ Gerir → 💶 Contas e 💸 Pagamentos.</div>';
-    if (fin.contas.length) html += '<div class="fin-sub">Contas</div>';
+    var html = '<div class="fin-total">' + L('Saldo total', 'Total balance') + '<b' + (fin.total < 0 ? ' class="neg"' : '') + '>' + euros(fin.total) + '</b></div>';
+    if (!fin.contas.length && !fin.pagamentos.length) html += '<div class="vazio">' + L('Ainda sem contas nem pagamentos. Acrescenta-os em ✏️ Gerir → 💶 Contas e 💸 Pagamentos.', 'No accounts or payments yet. Add them in ✏️ Manage → 💶 Accounts and 💸 Payments.') + '</div>';
+    if (fin.contas.length) html += '<div class="fin-sub">' + L('Contas', 'Accounts') + '</div>';
     for (var i = 0; i < fin.contas.length; i++) {
       var c = fin.contas[i];
       var at = c.atualizado ? deChave(c.atualizado) : null;
-      html += '<div class="fin-conta"><span>' + esc(c.nome) + (at ? '<small>' + at.getDate() + ' ' + MESES_CURTOS[at.getMonth()] + '</small>' : '') + '</span>' +
+      html += '<div class="fin-conta"><span>' + esc(c.nome) + (at ? '<small>' + dataCurta(at) + '</small>' : '') + '</span>' +
         '<span' + (c.saldo < 0 ? ' class="neg"' : '') + '>' + euros(c.saldo) + '</span></div>';
     }
     if (fin.pagamentos.length) {
-      html += '<div class="fin-sub">Próximos pagamentos · ' + euros(fin.totalPagamentos) + '</div>';
+      html += '<div class="fin-sub">' + L('Próximos pagamentos · ', 'Upcoming payments · ') + euros(fin.totalPagamentos) + '</div>';
       for (i = 0; i < fin.pagamentos.length; i++) {
         var p = fin.pagamentos[i];
         var dt = deChave(p.dia);
-        var q = p.faltam === 0 ? 'hoje' : p.faltam === 1 ? 'amanhã' : dt.getDate() + ' ' + MESES_CURTOS[dt.getMonth()];
+        var q = p.faltam === 0 ? L('hoje', 'today') : p.faltam === 1 ? L('amanhã', 'tomorrow') : dataCurta(dt);
         html += '<div class="fin-pag' + (p.faltam <= 3 ? ' breve' : '') + '"><span class="q">' + q + '</span><span class="d">' + esc(p.descricao) + '</span><span>' + euros(p.valor) + '</span></div>';
       }
     }
@@ -569,7 +585,7 @@
       var est = $('estado');
       if (err) {
         est.className = 'erro';
-        est.innerHTML = 'sem ligação ao servidor · a tentar de novo';
+        est.innerHTML = L('sem ligação ao servidor · a tentar de novo', 'no connection to the server · retrying');
         setTimeout(atualizar, 60000);
         return;
       }
@@ -587,7 +603,7 @@
       }
       desenhar(d);
       est.className = '';
-      est.innerHTML = 'atualizado ' + hhmm(new Date());
+      est.innerHTML = L('atualizado ', 'updated ') + hhmm(new Date());
       setTimeout(atualizar, cfgEcra.atualizarMinutos * 60000);
     });
   }

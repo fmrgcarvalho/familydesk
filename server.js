@@ -20,10 +20,13 @@ function lerJSON(nome, alternativa) {
 }
 
 var config = lerJSON('config.json', 'config.example.json');
+var idioma = require('./lib/idioma');
+idioma.definir(config.idioma);
+var L = idioma.L;
 
 // O dashboard fica ligado 24h: um erro inesperado fica no log mas não derruba o servidor
-process.on('uncaughtException', function (e) { console.error('[erro inesperado]', e && e.stack || e); });
-process.on('unhandledRejection', function (e) { console.error('[promessa rejeitada]', e && e.stack || e); });
+process.on('uncaughtException', function (e) { console.error(L('[erro inesperado]', '[unexpected error]'), e && e.stack || e); });
+process.on('unhandledRejection', function (e) { console.error(L('[promessa rejeitada]', '[unhandled rejection]'), e && e.stack || e); });
 process.env.TZ = config.fusoHorario || 'Europe/Lisbon';
 
 var ical = require('node-ical');
@@ -141,7 +144,7 @@ function qualidadeAr() {
     '?latitude=' + l.latitude + '&longitude=' + l.longitude +
     '&current=european_aqi,grass_pollen,birch_pollen,olive_pollen,alder_pollen,mugwort_pollen,ragweed_pollen' +
     '&timezone=' + encodeURIComponent(config.fusoHorario);
-  var NOMES = { grass_pollen: 'gramíneas', birch_pollen: 'bétula', olive_pollen: 'oliveira', alder_pollen: 'amieiro', mugwort_pollen: 'artemísia', ragweed_pollen: 'ambrósia' };
+  var NOMES = { grass_pollen: L('gramíneas', 'grass'), birch_pollen: L('bétula', 'birch'), olive_pollen: L('oliveira', 'olive'), alder_pollen: L('amieiro', 'alder'), mugwort_pollen: L('artemísia', 'mugwort'), ragweed_pollen: L('ambrósia', 'ragweed') };
   return obterJSON(url).then(function (j) {
     var polen = null;
     Object.keys(NOMES).forEach(function (k) {
@@ -153,6 +156,13 @@ function qualidadeAr() {
 }
 
 // Avisos meteorológicos do IPMA (amarelo/laranja/vermelho) para o distrito configurado
+// Tipos de aviso do IPMA (vêm em português)
+var TIPOS_AVISO_EN = {
+  'Precipitação': 'Rain', 'Neve': 'Snow', 'Trovoada': 'Thunderstorms', 'Nevoeiro': 'Fog',
+  'Tempo Frio': 'Cold weather', 'Tempo Quente': 'Hot weather', 'Vento': 'Wind', 'Agitação Marítima': 'Rough seas'
+};
+function tipoAviso(t) { return L(t, TIPOS_AVISO_EN[t] || t); }
+
 function avisosIPMA() {
   var area = config.ipmaArea;
   if (!area) return Promise.resolve([]);
@@ -166,7 +176,7 @@ function avisosIPMA() {
       if (vistos[k]) return false;
       return (vistos[k] = true);
     }).map(function (w) {
-      return { tipo: w.awarenessTypeName, nivel: w.awarenessLevelID, inicio: new Date(w.startTime).getTime(), fim: new Date(w.endTime).getTime(), texto: w.text || '' };
+      return { tipo: tipoAviso(w.awarenessTypeName), nivel: w.awarenessLevelID, inicio: new Date(w.startTime).getTime(), fim: new Date(w.endTime).getTime(), texto: w.text || '' };
     }).sort(function (a, b) { return a.inicio - b.inicio; });
   });
 }
@@ -198,7 +208,7 @@ function eventosDoCalendario(cal, de, ate) {
       var ev = dados[k];
       if (!ev || ev.type !== 'VEVENT' || ev.status === 'CANCELLED' || ev.recurrenceid) return;
       ical.expandRecurringEvent(ev, { from: de, to: ate, expandOngoing: true }).forEach(function (inst) {
-        var base = { titulo: texto(inst.summary) || '(sem título)', calendario: cal.nome, cor: cal.cor, local: texto(inst.event.location) };
+        var base = { titulo: texto(inst.summary) || L('(sem título)', '(untitled)'), calendario: cal.nome, cor: cal.cor, local: texto(inst.event.location) };
         if (inst.isFullDay) {
           // um registo por cada dia que o evento ocupa
           for (var d = inicioDoDia(inst.start); d < inst.end && d < ate; d = somaDias(d, 1)) {
@@ -223,11 +233,11 @@ function eventosDemo(hoje) {
     return { titulo: titulo, diaInteiro: false, inicio: ini.getTime(), fim: ini.getTime() + durMin * 60000, dia: chaveDia(ini), calendario: cal, cor: cor, local: local || '' };
   }
   return [
-    ev(0, 23, 0, 30, 'Preparar mochilas', 'iPhone'),
-    ev(1, 9, 30, 60, 'Reunião de equipa', 'Outlook', 'Teams'),
-    ev(1, 19, 30, 60, 'Jantar em casa dos avós', 'iPhone'),
-    ev(2, 10, 0, 90, 'Revisão trimestral', 'Outlook'),
-    ev(4, 8, 45, 30, 'Dentista', 'iPhone', 'Clínica')
+    ev(0, 23, 0, 30, L('Preparar mochilas', 'Pack school bags'), 'iPhone'),
+    ev(1, 9, 30, 60, L('Reunião de equipa', 'Team meeting'), 'Outlook', 'Teams'),
+    ev(1, 19, 30, 60, L('Jantar em casa dos avós', 'Dinner at the grandparents’'), 'iPhone'),
+    ev(2, 10, 0, 90, L('Revisão trimestral', 'Quarterly review'), 'Outlook'),
+    ev(4, 8, 45, 30, L('Dentista', 'Dentist'), 'iPhone', L('Clínica', 'Clinic'))
   ];
 }
 
@@ -238,7 +248,7 @@ function agendaCalendarios() {
     var cals = (config.calendarios || []).filter(function (c) { return c.url && c.url.indexOf('COLA_AQUI') === -1; });
     return Promise.all(cals.map(function (c) {
       return eventosDoCalendario(c, de, ate).catch(function (err) {
-        console.error('[calendário ' + c.nome + ']', err.message);
+        console.error(L('[calendário ', '[calendar ') + c.nome + ']', err.message);
         return [];
       });
     })).then(function (listas) {
@@ -325,7 +335,7 @@ function calendariosEmUso(f) {
 function motivoPausa(f, a, k) {
   if (a.pausaFerias === false) return null;
   var info = diaDoFilho(f, a.quem, k);
-  return info.feriado ? 'Feriado' : info.interrupcao;
+  return info.feriado ? L('Feriado', 'Public holiday') : info.interrupcao;
 }
 
 // Dia de escola de um filho, a partir do horário da turma. Devolve null se não há aulas
@@ -385,9 +395,9 @@ function resumoFamilia(f) {
     .map(function (a) {
       return {
         icone: a.faltam === 0 ? '🎉' : '🎂',
-        texto: a.faltam === 0 ? a.nome + ' faz anos hoje!' + (a.idade ? ' (' + a.idade + ')' : '')
-          : a.faltam === 1 ? a.nome + ' faz anos amanhã'
-          : a.nome + ' faz anos em ' + a.faltam + ' dias'
+        texto: a.faltam === 0 ? a.nome + L(' faz anos hoje!', '’s birthday is today!') + (a.idade ? ' (' + a.idade + ')' : '')
+          : a.faltam === 1 ? a.nome + L(' faz anos amanhã', '’s birthday is tomorrow')
+          : a.nome + L(' faz anos em ', '’s birthday in ') + a.faltam + L(' dias', ' days')
       };
     });
   // painel: família sempre (por ordem), colegas só nos próximos N dias
@@ -505,13 +515,13 @@ function eventosEscola(f, de, ate) {
   for (var d = de; d < ate; d = somaDias(d, 1)) {
     var k = chaveDia(d);
     var comum = escola.dia(k);
-    if (comum.feriado) lista.push({ titulo: '🇵🇹 ' + comum.feriado, tipo: 'feriado', diaInteiro: true, dia: k, cor: '#d29922', local: 'Feriado' });
+    if (comum.feriado) lista.push({ titulo: '🇵🇹 ' + comum.feriado, tipo: 'feriado', diaInteiro: true, dia: k, cor: '#d29922', local: L('Feriado', 'Public holiday') });
     var vistos = {};
     cals.forEach(function (cal) {
       var info = escola.dia(k, null, cal);
       if (info.interrupcao && !info.fimDeSemana && !vistos[info.interrupcao]) {
         vistos[info.interrupcao] = true;
-        lista.push({ titulo: escola.icone(info.interrupcao) + ' ' + info.interrupcao, tipo: 'ferias', diaInteiro: true, dia: k, cor: '#a371f7', local: 'Sem aulas' });
+        lista.push({ titulo: escola.icone(info.interrupcao) + ' ' + info.interrupcao, tipo: 'ferias', diaInteiro: true, dia: k, cor: '#a371f7', local: L('Sem aulas', 'No school') });
       }
       if (info.especial && !vistos[info.especial]) {
         vistos[info.especial] = true;
@@ -567,16 +577,16 @@ function calendarioICS(f, filtroQuem) {
   var tz = config.fusoHorario || 'Europe/Lisbon';
   var agora = new Date();
   var stamp = agora.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
-  var nome = filtroQuem ? 'Família · ' + filtroQuem : 'Família';
-  var L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//familydesk//PT', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+  var nome = filtroQuem ? L('Família · ', 'Family · ') + filtroQuem : L('Família', 'Family');
+  var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//familydesk//PT', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
     'X-WR-CALNAME:' + icsTexto(nome), 'X-WR-TIMEZONE:' + tz, 'REFRESH-INTERVAL;VALUE=DURATION:PT15M', 'X-PUBLISHED-TTL:PT15M'];
   var hoje = inicioDoDia(agora);
   function serve(quem) { return !filtroQuem || !quem || quem === filtroQuem || quem === 'Todos'; }
   function titulo(t, quem) { return quem && quem !== 'Todos' ? t + ' · ' + quem : t; }
   function evento(uid, linhas) {
-    L.push('BEGIN:VEVENT', 'UID:' + uid + '@familydesk', 'DTSTAMP:' + stamp);
-    linhas.forEach(function (l) { if (l) L.push(l); });
-    L.push('END:VEVENT');
+    ics.push('BEGIN:VEVENT', 'UID:' + uid + '@familydesk', 'DTSTAMP:' + stamp);
+    linhas.forEach(function (l) { if (l) ics.push(l); });
+    ics.push('END:VEVENT');
   }
 
   // Atividades semanais -> eventos recorrentes
@@ -584,7 +594,7 @@ function calendarioICS(f, filtroQuem) {
     var ds = DIAS_SEMANA.indexOf(normalizar(a.dia));
     if (ds < 0 || !serve(a.quem)) return;
     var primeiro = somaDias(hoje, (ds - hoje.getDay() + 7) % 7 - 7); // começa na semana passada
-    var desc = [a.levar ? 'Levar: ' + a.levar : '', a.quem ? 'Quem: ' + a.quem : ''].filter(Boolean).join('\n');
+    var desc = [a.levar ? L('Levar: ', 'Bring: ') + a.levar : '', a.quem ? L('Quem: ', 'Who: ') + a.quem : ''].filter(Boolean).join('\n');
     // dias sem atividade (feriados e férias) no próximo ano
     var excecoes = [];
     for (var d = primeiro; d < somaDias(hoje, 400); d = somaDias(d, 7)) {
@@ -639,9 +649,9 @@ function calendarioICS(f, filtroQuem) {
       'DTSTART;VALUE=DATE:' + icsData(dia),
       'DTEND;VALUE=DATE:' + icsData(somaDias(dia, 1)),
       'RRULE:FREQ=YEARLY',
-      'SUMMARY:' + icsTexto(a.familia ? '🎂 ' + a.nome + ' faz anos'
-        : '🎂 ' + a.nome + (a.quem && a.quem !== 'Todos' ? ' (colega ' + (/a$/.test(a.quem) ? 'da ' : 'do ') + a.quem + ')' : '')),
-      a.familia ? 'BEGIN:VALARM' : '', a.familia ? 'ACTION:DISPLAY' : '', a.familia ? 'DESCRIPTION:' + icsTexto('Aniversário ' + a.nome) : '',
+      'SUMMARY:' + icsTexto(a.familia ? '🎂 ' + a.nome + L(' faz anos', '’s birthday')
+        : '🎂 ' + a.nome + (a.quem && a.quem !== 'Todos' ? L(' (colega ' + (/a$/.test(a.quem) ? 'da ' : 'do ') + a.quem + ')', ' (' + a.quem + '’s classmate)') : '')),
+      a.familia ? 'BEGIN:VALARM' : '', a.familia ? 'ACTION:DISPLAY' : '', a.familia ? 'DESCRIPTION:' + icsTexto(L('Aniversário ' + a.nome, a.nome + '’s birthday')) : '',
       a.familia ? 'TRIGGER:-P7D' : '', a.familia ? 'END:VALARM' : '',
       a.nota ? 'DESCRIPTION:' + icsTexto(a.nota) : '',
       'TRANSP:TRANSPARENT'
@@ -679,7 +689,7 @@ function calendarioICS(f, filtroQuem) {
         vistosICS[uid] = true;
         evento(uid, ['DTSTART;VALUE=DATE:' + icsData(deChaveDia(x.inicio)),
           'DTEND;VALUE=DATE:' + icsData(somaDias(deChaveDia(x.fim), 1)),
-          'SUMMARY:' + icsTexto(escola.icone(x.nome) + ' ' + x.nome + ' (sem aulas)'), 'TRANSP:TRANSPARENT']);
+          'SUMMARY:' + icsTexto(escola.icone(x.nome) + ' ' + escola.traduzir(x.nome) + L(' (sem aulas)', ' (no school)')), 'TRANSP:TRANSPARENT']);
       });
       (a.diasEspeciais || []).forEach(function (x) {
         var uid = 'esp-' + x.data.replace(/-/g, '');
@@ -687,13 +697,13 @@ function calendarioICS(f, filtroQuem) {
         vistosICS[uid] = true;
         evento(uid, ['DTSTART;VALUE=DATE:' + icsData(deChaveDia(x.data)),
           'DTEND;VALUE=DATE:' + icsData(somaDias(deChaveDia(x.data), 1)),
-          'SUMMARY:' + icsTexto('🏫 ' + x.nome), 'TRANSP:TRANSPARENT']);
+          'SUMMARY:' + icsTexto('🏫 ' + escola.traduzir(x.nome)), 'TRANSP:TRANSPARENT']);
       });
     });
   });
 
-  L.push('END:VCALENDAR');
-  return L.map(dobrar).join('\r\n') + '\r\n';
+  ics.push('END:VCALENDAR');
+  return ics.map(dobrar).join('\r\n') + '\r\n';
 }
 
 // ---------- Logótipos dos destinos (guardados em data/logos, fora do git) ----------
@@ -708,18 +718,18 @@ function guardarLogo(id, corpo) {
     obter = Promise.resolve(Buffer.from(String(corpo.dados).replace(/^data:[^,]+,/, ''), 'base64'));
   } else if (/^https?:\/\//.test(corpo.url || '')) {
     obter = fetch(corpo.url, { headers: { 'User-Agent': 'Mozilla/5.0' } }).then(function (r) {
-      if (!r.ok) throw new Error('não consegui descarregar a imagem (HTTP ' + r.status + ')');
+      if (!r.ok) throw new Error(L('não consegui descarregar a imagem (HTTP ', 'could not download the image (HTTP ') + r.status + ')');
       return r.arrayBuffer();
     }).then(function (b) { return Buffer.from(b); });
   } else {
-    return Promise.reject(new Error('falta o link ou o ficheiro da imagem'));
+    return Promise.reject(new Error(L('falta o link ou o ficheiro da imagem', 'missing the image link or file')));
   }
   return obter.then(function (buf) {
     return sharp(buf).resize(96, 96, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
   }).then(function (png) {
     var f = lerFamilia();
     var d = f.destinos.filter(function (x) { return x.id === id; })[0];
-    if (!d) throw new Error('destino não encontrado');
+    if (!d) throw new Error(L('destino não encontrado', 'destination not found'));
     fs.mkdirSync(PASTA_LOGOS, { recursive: true });
     fs.writeFileSync(path.join(PASTA_LOGOS, id + '.png'), png);
     d.logo = '/logos/' + id + '.png?v=' + Date.now(); // ?v= força o iPad a ir buscar a nova versão
@@ -731,7 +741,7 @@ function guardarLogo(id, corpo) {
 function apagarLogo(id) {
   var f = lerFamilia();
   var d = f.destinos.filter(function (x) { return x.id === id; })[0];
-  if (!d) throw new Error('destino não encontrado');
+  if (!d) throw new Error(L('destino não encontrado', 'destination not found'));
   try { fs.unlinkSync(path.join(PASTA_LOGOS, id + '.png')); } catch (e) {}
   delete d.logo;
   guardarFamilia(f);
@@ -805,7 +815,7 @@ function dashboard(res) {
   var f;
   try { f = lerFamilia(); } catch (e) {
     f = { filhos: [], atividades: [], eventos: [], aniversarios: [] };
-    resultado.erroFamilia = 'data/familia.json inválido: ' + e.message;
+    resultado.erroFamilia = L('data/familia.json inválido: ', 'invalid data/familia.json: ') + e.message;
   }
   resultado.familia = resumoFamilia(f);
   var de = inicioDoDia(new Date());
@@ -817,7 +827,7 @@ function dashboard(res) {
       // calcula todos os destinos (o painel ampliado mostra-os todos); o ecrã principal só mostra os de hoje
       var deHoje = destinosDeHoje(f).map(function (d) { return d.id; });
       resultado.transito = t && Object.assign({}, t, { rotas: t.rotas.map(function (r) { return Object.assign({}, r, { principal: deHoje.indexOf(r.id) >= 0 }); }) });
-    }, function (e) { console.error('[trânsito]', e.message); resultado.transito = null; }),
+    }, function (e) { console.error(L('[trânsito]', '[traffic]'), e.message); resultado.transito = null; }),
     frase.doDia().then(function (fr) { resultado.frase = fr; }, function () { resultado.frase = null; })
   ]).then(function (r) {
     resultado.agenda = r[1].concat(eventosFamilia(f, de, ate), eventosEscola(f, de, ate)).sort(ordenarAgenda);
@@ -844,7 +854,7 @@ http.createServer(function (req, res) {
   // Coordenadas a partir de um link do Google Maps (também links curtos maps.app.goo.gl)
   if (url === '/api/coordenadas') {
     var link = new URL(req.url, 'http://x').searchParams.get('url') || '';
-    return transitoLib.resolverLink(link).then(function (c) { enviarJSON(res, c ? 200 : 404, c || { erro: 'Não encontrei coordenadas nesse link' }); });
+    return transitoLib.resolverLink(link).then(function (c) { enviarJSON(res, c ? 200 : 404, c || { erro: L('Não encontrei coordenadas nesse link', 'No coordinates found in that link') }); });
   }
   if (url === '/api/transito') {
     var fam = lerFamilia();
@@ -854,11 +864,11 @@ http.createServer(function (req, res) {
 
   var mFeito = /^\/api\/prazos\/([A-Za-z0-9_-]+)\/feito$/.exec(url);
   if (mFeito && req.method === 'POST') {
-    if (!pinValido(req)) return enviarJSON(res, 401, { erro: 'PIN errado' });
+    if (!pinValido(req)) return enviarJSON(res, 401, { erro: L('PIN errado', 'Wrong PIN') });
     try {
       var famP = lerFamilia();
       var p = prazoFeito(famP, mFeito[1]);
-      if (!p) return enviarJSON(res, 404, { erro: 'prazo não encontrado' });
+      if (!p) return enviarJSON(res, 404, { erro: L('prazo não encontrado', 'deadline not found') });
       guardarFamilia(famP);
       return enviarJSON(res, 200, { prazo: p });
     } catch (e) { return enviarJSON(res, 500, { erro: e.message }); }
@@ -866,13 +876,13 @@ http.createServer(function (req, res) {
 
   var mLogo = /^\/api\/destinos\/([A-Za-z0-9_-]+)\/logo$/.exec(url);
   if (mLogo && (req.method === 'POST' || req.method === 'DELETE')) {
-    if (!pinValido(req)) return enviarJSON(res, 401, { erro: 'PIN errado' });
+    if (!pinValido(req)) return enviarJSON(res, 401, { erro: L('PIN errado', 'Wrong PIN') });
     if (req.method === 'DELETE') {
       try { return enviarJSON(res, 200, { destino: apagarLogo(mLogo[1]) }); } catch (e) { return enviarJSON(res, 400, { erro: e.message }); }
     }
     return lerCorpo(req, function (txt) {
       var corpo;
-      try { corpo = JSON.parse(txt); } catch (e) { return enviarJSON(res, 400, { erro: 'pedido inválido' }); }
+      try { corpo = JSON.parse(txt); } catch (e) { return enviarJSON(res, 400, { erro: L('pedido inválido', 'invalid request') }); }
       guardarLogo(mLogo[1], corpo).then(function (d) { enviarJSON(res, 200, { destino: d }); },
         function (e) { enviarJSON(res, 400, { erro: e.message }); });
     });
@@ -914,11 +924,11 @@ http.createServer(function (req, res) {
   }
 
   if (url === '/api/familia' && req.method === 'PUT') {
-    if (!pinValido(req)) return enviarJSON(res, 401, { erro: 'PIN errado' });
+    if (!pinValido(req)) return enviarJSON(res, 401, { erro: L('PIN errado', 'Wrong PIN') });
     return lerCorpo(req, function (corpo) {
       try {
         var f = JSON.parse(corpo);
-        if (!f || !Array.isArray(f.filhos)) throw new Error('formato inválido');
+        if (!f || !Array.isArray(f.filhos)) throw new Error(L('formato inválido', 'invalid format'));
         ['atividades', 'eventos', 'aniversarios', 'contas', 'pagamentos', 'horarios', 'destinos', 'prazos'].forEach(function (k) { if (!Array.isArray(f[k])) f[k] = []; });
         guardarFamilia(f);
         enviarJSON(res, 200, { familia: f });
@@ -928,20 +938,26 @@ http.createServer(function (req, res) {
     });
   }
 
+  // idioma das páginas (config.json → "idioma"), carregado antes dos outros scripts
+  if (url === '/idioma.js') {
+    res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-cache' });
+    return res.end('window.IDIOMA = ' + JSON.stringify(idioma.idioma()) + ';');
+  }
+
   if (url === '/') url = '/index.html';
   if (url === '/gerir') url = '/gerir.html';
   if (url === '/iphone') url = '/iphone.html';
   var ficheiro = path.join(ROOT, 'public', path.normalize(url).replace(/^(\.\.[\/\\])+/, ''));
   if (ficheiro.indexOf(path.join(ROOT, 'public')) !== 0) { res.writeHead(403); return res.end(); }
   fs.readFile(ficheiro, function (err, conteudo) {
-    if (err) { res.writeHead(404); return res.end('Não encontrado'); }
+    if (err) { res.writeHead(404); return res.end(L('Não encontrado', 'Not found')); }
     res.writeHead(200, { 'Content-Type': TIPOS[path.extname(ficheiro)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
     res.end(conteudo);
   });
 }).listen(config.porta || 3000, '0.0.0.0', function () {
   var ips = enderecosLocais();
   var porta = config.porta || 3000;
-  console.log('FamilyDesk a correr:');
+  console.log(L('FamilyDesk a correr:', 'FamilyDesk running:'));
   ips.forEach(function (ip) { console.log('  iPad:    http://' + ip + ':' + porta); });
-  console.log('  Gerir:   http://localhost:' + porta + '/gerir');
+  console.log(L('  Gerir:   http://localhost:', '  Manage:  http://localhost:') + porta + '/gerir');
 });

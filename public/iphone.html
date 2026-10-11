@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="FamilyDesk">
 <meta name="theme-color" content="#0d1117">
 <link rel="apple-touch-icon" href="icone.png">
+<script src="idioma.js"></script>
 <link rel="manifest" href="manifest.json">
 <title>FamilyDesk</title>
 <style>
@@ -177,45 +178,71 @@
 <script>
 const C = window.Comum;
 const { DIAS, DIAS_CURTOS, MESES, MESES_CURTOS, tempo, esc, chip, chaveDia, deChave, hhmm, nomeDia, euros } = C;
+const { L, dataCurta } = C;
 const $ = id => document.getElementById(id);
 
-function saudacao(h) { return h < 6 ? 'Boa noite' : h < 13 ? 'Bom dia' : h < 20 ? 'Boa tarde' : 'Boa noite'; }
+// Texto estático da página (markup em português) → idioma configurado
+function textoNo(el, s) { // troca o primeiro nó de texto não vazio, mantendo spans/links/botões
+  const n = [...el.childNodes].find(n => n.nodeType === 3 && n.textContent.trim());
+  if (n) n.textContent = s;
+}
+function traduzirPagina() {
+  document.documentElement.lang = C.EN ? 'en' : 'pt-PT';
+  $('ola').textContent = L('Olá', 'Hello');
+  $('c-agora').querySelector('.vazio').textContent = L('A carregar…', 'Loading…');
+  $('escola-titulo').textContent = L('Escola', 'School');
+  textoNo($('c-transito').querySelector('h2'), L('🚗 Trânsito ', '🚗 Traffic '));
+  $('horas').previousElementSibling.textContent = L('Próximas horas', 'Next hours');
+  $('dias').previousElementSibling.textContent = L('Próximos 7 dias', 'Next 7 days');
+  $('agenda').previousElementSibling.textContent = L('Agenda', 'Schedule');
+  $('atividades').previousElementSibling.textContent = L('Atividades', 'Activities');
+  textoNo($('c-prazos').querySelector('h2'), L('📋 Prazos ', '📋 Deadlines '));
+  $('c-prazos').querySelector('h2 a').textContent = L('gerir ›', 'manage ›');
+  $('aniversarios').previousElementSibling.textContent = L('Aniversários', 'Birthdays');
+  textoNo($('c-financas').querySelector('h2'), L('💶 Finanças ', '💶 Finances '));
+  $('ver-fin').textContent = L('Mostrar', 'Show');
+  const nav = document.querySelectorAll('nav a');
+  [L('Resumo', 'Summary'), L('Gerir', 'Manage'), L('Calendário', 'Calendar'), L('Atualizar', 'Refresh')].forEach((s, i) => textoNo(nav[i], s));
+}
+traduzirPagina();
+
+function saudacao(h) { return h < 6 ? L('Boa noite', 'Good night') : h < 13 ? L('Bom dia', 'Good morning') : h < 20 ? L('Boa tarde', 'Good afternoon') : L('Boa noite', 'Good evening'); }
 
 function desenharAgora(m, contagens) {
   const a = new Date();
   $('ola').textContent = saudacao(a.getHours());
-  $('data').textContent = `${DIAS[a.getDay()]}, ${a.getDate()} de ${MESES[a.getMonth()]}`;
+  $('data').textContent = L(`${DIAS[a.getDay()]}, ${a.getDate()} de ${MESES[a.getMonth()]}`, `${DIAS[a.getDay()]}, ${MESES[a.getMonth()]} ${a.getDate()}`);
 
   let chips = (contagens || []).map(c => `<span class="alerta">${c.icone} ${esc(c.texto)}</span>`).join('');
   if (!m || m.erro) {
-    $('c-agora').innerHTML = '<div class="vazio">Sem meteorologia</div>';
+    $('c-agora').innerHTML = `<div class="vazio">${L('Sem meteorologia', 'No weather data')}</div>`;
     $('chips').innerHTML = chips;
     return;
   }
   const at = m.atual, hoje = m.dias[0] || {}, t = tempo(at.codigo);
   $('c-agora').innerHTML = `
     <div class="agora"><span class="ic">${at.dia ? t[0] : t[1]}</span><span class="t">${at.temp}°</span>
-      <span class="d">${esc(t[2])}<small>${esc(m.local)} · máx ${hoje.max}° mín ${hoje.min}°</small></span></div>
+      <span class="d">${esc(t[2])}<small>${esc(m.local)} · ${L('máx', 'high')} ${hoje.max}° ${L('mín', 'low')} ${hoje.min}°</small></span></div>
     <div class="detalhes">
-      <span>🌡 Sensação <b>${at.sensacao}°</b></span><span>💧 Humidade <b>${at.humidade}%</b></span>
-      <span>💨 <b>${at.vento} km/h ${C.direcaoVento(at.direcao)}</b> · raj. ${at.rajada}</span><span>☀️ UV <b>${Math.round(at.uv)}</b> ${C.nivelUV(at.uv)}</span>
+      <span>🌡 ${L('Sensação', 'Feels like')} <b>${at.sensacao}°</b></span><span>💧 ${L('Humidade', 'Humidity')} <b>${at.humidade}%</b></span>
+      <span>💨 <b>${at.vento} km/h ${C.direcaoVento(at.direcao)}</b> · ${L('raj.', 'gusts')} ${at.rajada}</span><span>☀️ ${L('UV', 'UV')} <b>${Math.round(at.uv)}</b> ${C.nivelUV(at.uv)}</span>
       <span>🌅 <b>${hoje.nascer}</b> · 🌇 <b>${hoje.por}</b></span>
-      ${m.ar && m.ar.aqi != null ? `<span>🍃 Ar <b>${C.nivelAr(m.ar.aqi)}</b>${m.ar.polen ? ' · pólen ' + C.nivelPolen(m.ar.polen.valor) : ''}</span>` : ''}
+      ${m.ar && m.ar.aqi != null ? `<span>🍃 ${L('Ar', 'Air')} <b>${C.nivelAr(m.ar.aqi)}</b>${m.ar.polen ? L(' · pólen ', ' · pollen ') + C.nivelPolen(m.ar.polen.valor) : ''}</span>` : ''}
     </div>`;
 
-  chips += (m.avisos || []).map(w => { const f = new Date(w.fim);
-    return `<span class="alerta ${esc(w.nivel)}">⚠️ Aviso ${C.NIVEL_AVISO[w.nivel] || ''}: ${esc(w.tipo)} até ${DIAS_CURTOS[f.getDay()]} ${hhmm(f)}</span>`; }).join('');
+  chips += (m.avisos || []).map(w => { const f = new Date(w.fim), nivel = C.NIVEL_AVISO[w.nivel] || '', ate = `${DIAS_CURTOS[f.getDay()]} ${hhmm(f)}`;
+    return `<span class="alerta ${esc(w.nivel)}">⚠️ ${L(`Aviso ${nivel}: ${esc(w.tipo)} até ${ate}`, `${nivel ? nivel[0].toUpperCase() + nivel.slice(1) + ' w' : 'W'}arning: ${esc(w.tipo)} until ${ate}`)}</span>`; }).join('');
   chips += C.dicasTempo(m).map(d => `<span class="alerta">${d}</span>`).join('');
   $('chips').innerHTML = chips;
 
-  $('horas').innerHTML = m.horas.filter((_, i) => i % 2 === 0).map((h, i) => `<div class="hr"><div class="h">${i === 0 ? 'Agora' : C.pad(h.hora) + 'h'}</div>
+  $('horas').innerHTML = m.horas.filter((_, i) => i % 2 === 0).map((h, i) => `<div class="hr"><div class="h">${i === 0 ? L('Agora', 'Now') :C.pad(h.hora) + 'h'}</div>
     <div class="i">${tempo(h.codigo)[h.dia ? 0 : 1]}</div><div class="tt">${h.temp}°</div><div class="c">${h.chuva >= 10 ? h.chuva + '%' : ''}</div></div>`).join('');
 
   // barras de temperatura à escala dos 5 dias (como na app Tempo)
   const lo = Math.min(...m.dias.map(d => d.min)), hi = Math.max(...m.dias.map(d => d.max)), amp = Math.max(1, hi - lo);
   const hojeK = chaveDia(new Date());
   $('dias').innerHTML = m.dias.map(d => { const dt = deChave(d.dia);
-    return `<div class="dia"><span>${d.dia === hojeK ? 'Hoje' : DIAS_CURTOS[dt.getDay()] + ' ' + dt.getDate()}</span>
+    return `<div class="dia"><span>${d.dia === hojeK ? L('Hoje', 'Today') :DIAS_CURTOS[dt.getDay()] + ' ' + dt.getDate()}</span>
       <span class="ic">${tempo(d.codigo)[0]}</span><span class="ch">${d.chuva > 0 ? '💧' + d.chuva + '%' : ''}</span>
       <span class="barra"><span class="min">${d.min}°</span><span class="trilho"><span class="enchido" style="left:${(d.min - lo) / amp * 100}%;right:${(hi - d.max) / amp * 100}%"></span></span><span class="max">${d.max}°</span></span></div>`;
   }).join('');
@@ -230,10 +257,10 @@ function desenharAgenda(eventos) {
     if (e.dia !== dia) { dia = e.dia; html += `<div class="grupo${e.dia === hojeK ? ' hoje' : ''}">${nomeDia(e.dia, hojeK, amanhaK)}</div>`; }
     const ic = e.tipo ? (C.ICONE_TIPO[e.tipo] || '') + ' ' : '';
     html += `<div class="linha"><span class="cor" style="background:${esc(e.cor || '#58a6ff')}"></span>
-      <span class="h">${e.diaInteiro ? 'dia' : hhmm(new Date(e.inicio))}</span>
+      <span class="h">${e.diaInteiro ? L('dia', 'all day') :hhmm(new Date(e.inicio))}</span>
       <span class="o">${ic}${esc(e.titulo)}${e.quem ? chip(e.quem, e.cor) : ''}${e.local || e.notas ? `<small>${esc([e.local, e.notas].filter(Boolean).join(' · '))}</small>` : ''}</span></div>`;
   }
-  $('agenda').innerHTML = html || '<div class="vazio">Sem compromissos nos próximos dias</div>';
+  $('agenda').innerHTML = html || `<div class="vazio">${L('Sem compromissos nos próximos dias', 'Nothing scheduled for the next few days')}</div>`;
 }
 
 function desenharAtividades(lista, dias, escolaDias) {
@@ -244,10 +271,10 @@ function desenharAtividades(lista, dias, escolaDias) {
     if (!doDia.length && !esc_.length && off > 0 && !info.pausadas) return;
     const d = deChave(info.dia);
     const motivo = info.feriado ? '🇵🇹 ' + info.feriado : info.interrupcao || '';
-    html += `<div class="grupo${off === 0 ? ' hoje' : ''}">${off === 0 ? 'Hoje' : off === 1 ? 'Amanhã' : DIAS[d.getDay()]}${motivo ? ` <span class="motivo">· ${esc(motivo)}</span>` : ''}</div>`;
+    html += `<div class="grupo${off === 0 ? ' hoje' : ''}">${off === 0 ? L('Hoje', 'Today') : off === 1 ? L('Amanhã', 'Tomorrow') : DIAS[d.getDay()]}${motivo ? ` <span class="motivo">· ${esc(motivo)}</span>` : ''}</div>`;
     html += esc_.map(e => `<div class="linha"><span class="cor" style="background:${esc(e.cor)}"></span><span class="h">${esc(e.entrada)}</span>
-      <span class="o">🏫 Escola até ${esc(e.aec ? e.saidaSemAec || e.saida : e.saida)}${chip(e.quem, e.cor)}${e.aec || e.levar ? `<span class="lv">${esc([e.aec && 'AEC ' + e.aec + ' até ' + e.saida, e.levar && '🎒 ' + e.levar].filter(Boolean).join(' · '))}</span>` : ''}</span></div>`).join('');
-    if (!doDia.length && !esc_.length) html += `<div class="vazio">${info.pausadas ? `Sem atividades (${info.pausadas} em pausa)` : 'Sem atividades'}</div>`;
+      <span class="o">🏫 ${L('Escola até', 'School until')} ${esc(e.aec ? e.saidaSemAec || e.saida : e.saida)}${chip(e.quem, e.cor)}${e.aec || e.levar ? `<span class="lv">${esc([e.aec && 'AEC ' + e.aec + L(' até ', ' until ') + e.saida, e.levar && '🎒 ' + e.levar].filter(Boolean).join(' · '))}</span>` : ''}</span></div>`).join('');
+    if (!doDia.length && !esc_.length) html += `<div class="vazio">${info.pausadas ? L(`Sem atividades (${info.pausadas} em pausa)`, `No activities (${info.pausadas} paused)`) : L('Sem atividades', 'No activities')}</div>`;
     html += doDia.map(a => `<div class="linha"><span class="cor" style="background:${esc(a.cor)}"></span><span class="h">${esc(a.inicio)}</span>
       <span class="o">${esc(a.atividade)}${chip(a.quem, a.cor)}${a.local ? `<small>${esc(a.local)}</small>` : ''}${a.levar && off <= 1 ? `<span class="lv">🎒 ${esc(a.levar)}</span>` : ''}</span></div>`).join('');
   });
@@ -264,7 +291,7 @@ function desenharEscola(escolaDias) {
   const e = escolaDias.find(x => x.quem === filhoEscola);
   const hojeK = chaveDia(new Date()), d = deChave(e.dia);
   const amanha = chaveDia(new Date(Date.now() + 864e5));
-  $('escola-titulo').textContent = '🏫 Escola · ' + (e.dia === hojeK ? 'hoje' : e.dia === amanha ? 'amanhã' : DIAS[d.getDay()].toLowerCase());
+  $('escola-titulo').textContent = L('🏫 Escola · ', '🏫 School · ') + (e.dia === hojeK ? L('hoje', 'today') : e.dia === amanha ? L('amanhã', 'tomorrow') : C.EN ? DIAS[d.getDay()] : DIAS[d.getDay()].toLowerCase());
   const agora = hhmm(new Date());
   const abas = quem.length > 1 ? '<div class="abas">' + quem.map(q => { const c = escolaDias.find(x => x.quem === q).cor;
     return `<button class="aba${q === filhoEscola ? ' ativa' : ''}" style="${q === filhoEscola ? 'background:' + esc(c) : 'color:' + esc(c)}" data-quem="${esc(q)}">${esc(q)}</button>`; }).join('') + '</div>' : '';
@@ -280,35 +307,37 @@ function desenharEscola(escolaDias) {
 function desenharTransito(t) {
   $('c-transito').hidden = !(t && t.rotas && t.rotas.length);
   if ($('c-transito').hidden) return;
-  $('transito-info').textContent = (t.comTransito ? '' : 'sem trânsito · ') + hhmm(new Date(t.atualizado));
+  $('transito-info').textContent = (t.comTransito ? '' : L('sem trânsito · ', 'no live traffic · ')) + hhmm(new Date(t.atualizado));
   $('transito').innerHTML = t.rotas.map(r => r.erro
-    ? `<div class="rota"><span class="ic">${esc(r.icone)}</span><span class="o">${esc(r.nome)}<small>sem rota</small></span></div>`
+    ? `<div class="rota"><span class="ic">${esc(r.icone)}</span><span class="o">${esc(r.nome)}<small>${L('sem rota', 'no route')}</small></span></div>`
     : `<a class="rota ${esc(r.estado)}" href="${esc(r.link)}" target="_blank" rel="noopener"><span class="ic">${r.logo ? `<img src="${esc(r.logo)}" alt="">` : esc(r.icone)}</span>
-        <span class="o">${esc(r.nome)}<small>${r.km} km · chegada às ${r.chegada}${t.comTransito ? ' · normal ' + r.normal + ' min' : ''}</small></span>
-        <span class="m">${r.minutos} min${r.atraso >= 3 ? `<small>+${r.atraso} min</small>` : ''}</span><span class="seta">›</span></a>`).join('');
+        <span class="o">${esc(r.nome)}<small>${r.km} km · ${L('chegada às', 'arrive at')} ${r.chegada}${t.comTransito ? L(' · normal ', ' · usually ') + r.normal + ' ' + L('min', 'min') : ''}</small></span>
+        <span class="m">${r.minutos} ${L('min', 'min')}${r.atraso >= 3 ? `<small>+${r.atraso} ${L('min', 'min')}</small>` : ''}</span><span class="seta">›</span></a>`).join('');
 }
 
 function desenharPrazos(lista) {
   $('c-prazos').hidden = !lista.length;
   $('prazos').innerHTML = lista.map(p => { const dt = deChave(p.data);
-    const quando = p.atrasado ? `atrasado há ${-p.faltam} dias` : p.faltam === 0 ? 'hoje' : p.faltam === 1 ? 'amanhã' : `${dt.getDate()} ${MESES_CURTOS[dt.getMonth()]} · daqui a ${p.faltam} dias`;
+    const quando = p.atrasado ? L(`atrasado há ${-p.faltam} dias`, `${-p.faltam} ${-p.faltam === 1 ? 'day' : 'days'} overdue`)
+      : p.faltam === 0 ? L('hoje', 'today') : p.faltam === 1 ? L('amanhã', 'tomorrow')
+      : `${dataCurta(dt)} · ${L(`daqui a ${p.faltam} dias`, `in ${p.faltam} days`)}`;
     return `<div class="prazo${p.atrasado ? ' atrasado' : p.faltam <= 7 ? ' breve' : ''}"><span>${p.icone}</span>
       <span class="o">${esc(p.titulo)}${p.quem ? chip(p.quem, p.cor) : ''}<small>${quando}${p.notas ? ' · ' + esc(p.notas) : ''}</small></span>
-      <button class="feito" data-id="${esc(p.id)}">✓ Feito</button></div>`;
+      <button class="feito" data-id="${esc(p.id)}">${L('✓ Feito', '✓ Done')}</button></div>`;
   }).join('');
   $('prazos').querySelectorAll('.feito').forEach(b => b.onclick = async () => {
     b.disabled = true; b.textContent = '…';
     const r = await fetch('/api/prazos/' + encodeURIComponent(b.dataset.id) + '/feito', { method: 'POST', headers: { 'X-Pin': localStorage.getItem('pin') || '' } });
-    if (r.status === 401) { const pin = prompt('PIN de gestão:'); if (pin != null) localStorage.setItem('pin', pin); }
+    if (r.status === 401) { const pin = prompt(L('PIN de gestão:', 'Admin PIN:')); if (pin != null) localStorage.setItem('pin', pin); }
     atualizar();
   });
 }
 
 function desenharAniversarios(lista) {
   $('aniversarios').innerHTML = lista.map(a => { const dt = deChave(a.dia);
-    const quando = a.faltam === 0 ? '🎉 hoje!' : a.faltam === 1 ? 'amanhã' : `${dt.getDate()} ${MESES_CURTOS[dt.getMonth()]} · ${a.faltam} dias`;
+    const quando = a.faltam === 0 ? L('🎉 hoje!', '🎉 today!') : a.faltam === 1 ? L('amanhã', 'tomorrow') : `${dataCurta(dt)} · ${a.faltam} ${L('dias', 'days')}`;
     return `<div class="linha${a.faltam === 0 ? ' hoje' : a.faltam <= 7 ? ' breve' : ''}"><span class="o">🎂 ${esc(a.nome)}${a.idade ? ` (${a.idade})` : ''}${chip(a.quem, a.cor)}</span><span class="f">${quando}</span></div>`;
-  }).join('') || '<div class="vazio">Nenhum nos próximos dias</div>';
+  }).join('') || `<div class="vazio">${L('Nenhum nos próximos dias', 'None in the coming days')}</div>`;
 }
 
 // Finanças: escondidas (desfocadas) até tocar em "Mostrar"; voltam a esconder-se após 60 s
@@ -317,22 +346,22 @@ function desenharFinancas(fin) {
   $('c-financas').hidden = !fin;
   if (!fin) return;
   $('financas').innerHTML = `<div class="total${fin.total < 0 ? ' neg' : ''}">${euros(fin.total)}</div>` +
-    fin.contas.map(c => `<div class="linha"><span class="o">${esc(c.nome)}${c.atualizado ? `<small>atualizado ${deChave(c.atualizado).getDate()} ${MESES_CURTOS[deChave(c.atualizado).getMonth()]}</small>` : ''}</span><span class="${c.saldo < 0 ? 'neg' : ''}">${euros(c.saldo)}</span></div>`).join('') +
-    (fin.pagamentos.length ? `<div class="grupo">Próximos pagamentos · ${euros(fin.totalPagamentos)}</div>` +
+    fin.contas.map(c => `<div class="linha"><span class="o">${esc(c.nome)}${c.atualizado ? `<small>${L('atualizado', 'updated')} ${dataCurta(deChave(c.atualizado))}</small>` : ''}</span><span class="${c.saldo < 0 ? 'neg' : ''}">${euros(c.saldo)}</span></div>`).join('') +
+    (fin.pagamentos.length ? `<div class="grupo">${L('Próximos pagamentos', 'Upcoming payments')} ·${euros(fin.totalPagamentos)}</div>` +
       fin.pagamentos.map(p => { const dt = deChave(p.dia);
-        return `<div class="linha${p.faltam <= 3 ? ' breve' : ''}"><span class="h">${p.faltam === 0 ? 'hoje' : p.faltam === 1 ? 'amanhã' : dt.getDate() + ' ' + MESES_CURTOS[dt.getMonth()]}</span><span class="o">${esc(p.descricao)}</span><span>${euros(p.valor)}</span></div>`; }).join('') : '');
+        return `<div class="linha${p.faltam <= 3 ? ' breve' : ''}"><span class="h">${p.faltam === 0 ? L('hoje', 'today') : p.faltam === 1 ? L('amanhã', 'tmrw') : dataCurta(dt)}</span><span class="o">${esc(p.descricao)}</span><span>${euros(p.valor)}</span></div>`; }).join('') : '');
 }
-function esconderFin() { $('financas').classList.add('oculto'); $('ver-fin').textContent = 'Mostrar'; }
+function esconderFin() { $('financas').classList.add('oculto'); $('ver-fin').textContent = L('Mostrar', 'Show'); }
 $('ver-fin').onclick = () => {
   const oculto = $('financas').classList.toggle('oculto');
-  $('ver-fin').textContent = oculto ? 'Mostrar' : 'Esconder';
+  $('ver-fin').textContent = oculto ? L('Mostrar', 'Show') : L('Esconder', 'Hide');
   clearTimeout(finTimer);
   if (!oculto) finTimer = setTimeout(esconderFin, 60000);
 };
 
 let versao = null;
 async function atualizar() {
-  $('estado').textContent = 'A atualizar…';
+  $('estado').textContent = L('A atualizar…', 'Updating…');
   try {
     const d = await (await fetch('/api/dashboard', { cache: 'no-store' })).json();
     if (versao && d.versao && d.versao !== versao) return location.reload();
@@ -346,9 +375,9 @@ async function atualizar() {
     desenharPrazos(d.familia.prazos || []);
     desenharAniversarios(d.familia.aniversarios || []);
     desenharFinancas(d.familia.financas);
-    $('estado').textContent = 'Atualizado às ' + hhmm(new Date());
+    $('estado').textContent = L('Atualizado às ', 'Updated at ') + hhmm(new Date());
   } catch (e) {
-    $('estado').textContent = 'Sem ligação ao servidor. Estás no Wi-Fi de casa?';
+    $('estado').textContent = L('Sem ligação ao servidor. Estás no Wi-Fi de casa?', "Can't reach the server. Are you on the home Wi-Fi?");
   }
 }
 

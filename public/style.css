@@ -341,6 +341,7 @@ body.menu-aberto .expandido:after { bottom: 68px; }
   position: fixed; right: 80px; bottom: 26px;
   font-size: 12px; color: #6e7681;
 }
+html.lang-en .expandido:after { content: 'tap to go back'; }
 #faixa-tempo.expandido > #horas, #faixa-tempo.expandido > #previsao {
   display: -webkit-flex !important; display: flex !important;
   border: 0; margin: 10px 0 26px; padding: 0;

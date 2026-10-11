@@ -61,6 +61,7 @@
   }
   .hero > * { min-width: 0; } /* the miniature must not widen the page on phones */
   .lede { font-size: 21px; color: var(--muted); max-width: 30em; margin: 0 0 32px; }
+  .lede + .aside { font-size: 17px; font-style: italic; color: var(--muted); max-width: 32em; margin: -18px 0 30px; }
   .cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
   .btn {
     display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 12px;
@@ -250,6 +251,7 @@
       <div>
         <h1>The family's day, at a glance by the front door.</h1>
         <p class="lede">Turn an old iPad into a wall dashboard: one agenda for the whole family, the kids' activities and what goes in each backpack, weather, live traffic and family photos. It runs on a PC at home — even on an iPad 2.</p>
+        <p class="aside">That iPad 2 that has spent the last three years as a very expensive paperweight in the kitchen drawer? It has a job again.</p>
         <div class="cta">
           <a class="btn primary" href="#install">Set it up</a>
           <a class="btn ghost" href="https://github.com/fmrgcarvalho/familydesk">View the code</a>
@@ -258,6 +260,7 @@
           <li>Free and open source</li>
           <li>Data stays on your network</li>
           <li>Works on iOS 9</li>
+          <li>English and Portuguese</li>
         </ul>
       </div>
 
@@ -407,6 +410,7 @@
         <table>
           <thead><tr><th scope="col">Setting</th><th scope="col">What it does</th></tr></thead>
           <tbody>
+            <tr><td><code>idioma</code></td><td>Language of the whole interface and the subscribed calendar: <code>"en"</code> (default) or <code>"pt"</code>.</td></tr>
             <tr><td><code>local</code></td><td>Where you live, for the weather.</td></tr>
             <tr><td><code>calendarios</code></td><td>ICS links for the agenda (iCloud, Outlook…) and their colours.</td></tr>
             <tr><td><code>transito.tomtomChave</code></td><td>Free TomTom key for live traffic. Without it, travel times come from OSRM, without traffic.</td></tr>
@@ -448,7 +452,7 @@ npm install</code></pre><button class="copy" type="button">Copy</button></div>
 
     <section id="status" aria-labelledby="e-title">
       <h2 id="e-title">Project status</h2>
-      <p class="sub">Built for a real family hallway and used every day. The interface is in Portuguese, and the school calendar is Portugal's.</p>
+      <p class="sub">Built for a real family hallway and used every day. The interface is available in English and Portuguese (one setting, <code>idioma</code>); holidays and the school calendar are Portugal's.</p>
       <div class="status">
         <div>
           <h3>Available</h3>
@@ -458,6 +462,7 @@ npm install</code></pre><button class="copy" type="button">Copy</button></div>
             <li><strong>Management page</strong> with PIN</li>
             <li><strong>Live traffic</strong>, <strong>photos</strong>, <strong>household deadlines</strong></li>
             <li>Optional <strong>finances</strong> panel, hidden by default</li>
+            <li>Interface in <strong>English</strong> and <strong>Portuguese</strong></li>
           </ul>
         </div>
         <div>
@@ -466,7 +471,7 @@ npm install</code></pre><button class="copy" type="button">Copy</button></div>
             <li>School menus</li>
             <li>Shared shopping list</li>
             <li>“Leave by” time in the morning</li>
-            <li>Other languages and school calendars</li>
+            <li>More languages and other countries' school calendars</li>
           </ul>
         </div>
       </div>

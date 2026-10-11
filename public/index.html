@@ -12,6 +12,7 @@
   if (screen.width < 700 && location.hash !== '#ipad') location.replace('/iphone');
 </script>
 <link rel="apple-touch-icon" href="icone.png">
+<script src="idioma.js"></script>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -41,27 +42,27 @@
   <div id="principal" class="linha">
     <div id="col-esq">
       <div id="col-agenda" class="painel">
-        <h2>Agenda</h2>
+        <h2 data-en="Calendar">Agenda</h2>
         <div id="agenda"></div>
       </div>
     </div>
     <div id="col-lado">
       <div class="painel" id="painel-atividades">
-        <h2>Atividades</h2>
+        <h2 data-en="Activities">Atividades</h2>
         <div id="atividades"></div>
       </div>
       <div class="painel" id="painel-mochila">
-        <h2>🎒 Não esquecer <span id="mochila-quando"></span></h2>
+        <h2>🎒 <span data-en="Don&#39;t forget">Não esquecer</span> <span id="mochila-quando"></span></h2>
         <div id="mochila"></div>
       </div>
       <div class="painel" id="painel-financas">
-        <h2>Finanças <span id="fin-fechar">esconder ✕</span></h2>
+        <h2><span data-en="Finances">Finanças</span> <span id="fin-fechar" data-en="hide ✕">esconder ✕</span></h2>
         <div id="financas"></div>
       </div>
       <div id="agenda-foto"><div id="afoto0" class="afoto"></div><div id="afoto1" class="afoto"></div></div>
       <div id="col-baixo">
         <div id="painel-transito" class="painel">
-          <h2>Trânsito <span id="transito-info"></span></h2>
+          <h2><span data-en="Traffic">Trânsito</span> <span id="transito-info"></span></h2>
           <div id="transito"></div>
         </div>
         <div id="datas-escola"></div>
@@ -69,15 +70,15 @@
     </div>
   </div>
   <div id="menu">
-    <span class="mb" data-alvo="col-agenda">📅<i>Agenda</i></span>
-    <span class="mb" data-alvo="painel-atividades">🎒<i>Atividades</i></span>
-    <span class="mb" data-alvo="faixa-tempo">⛅️<i>Tempo</i></span>
-    <span class="mb" data-alvo="painel-transito">🚗<i>Trânsito</i></span>
-    <span class="mb" data-alvo="agenda-foto">📷<i>Fotos</i></span>
-    <span class="mb oculto" id="btn-fin">💶<i>Finanças</i></span>
-    <a class="mb" id="mb-gerir" href="/gerir">✏️<i>Gerir</i></a>
+    <span class="mb" data-alvo="col-agenda">📅<i data-en="Calendar">Agenda</i></span>
+    <span class="mb" data-alvo="painel-atividades">🎒<i data-en="Activities">Atividades</i></span>
+    <span class="mb" data-alvo="faixa-tempo">⛅️<i data-en="Weather">Tempo</i></span>
+    <span class="mb" data-alvo="painel-transito">🚗<i data-en="Traffic">Trânsito</i></span>
+    <span class="mb" data-alvo="agenda-foto">📷<i data-en="Photos">Fotos</i></span>
+    <span class="mb oculto" id="btn-fin">💶<i data-en="Finances">Finanças</i></span>
+    <a class="mb" id="mb-gerir" href="/gerir">✏️<i data-en="Manage">Gerir</i></a>
     <span id="estado"></span>
-    <span class="mb" id="mb-atualizar">🔄<i>Atualizar</i></span>
+    <span class="mb" id="mb-atualizar">🔄<i data-en="Refresh">Atualizar</i></span>
   </div>
   <div id="btn-menu">☰</div>
   <div id="fotos">

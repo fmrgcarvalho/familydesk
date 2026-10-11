@@ -61,6 +61,7 @@
   }
   .hero > * { min-width: 0; } /* a miniatura não pode alargar a página nos telemóveis */
   .lede { font-size: 21px; color: var(--muted); max-width: 30em; margin: 0 0 32px; }
+  .lede + .aside { font-size: 17px; font-style: italic; color: var(--muted); max-width: 32em; margin: -18px 0 30px; }
   .cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
   .btn {
     display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 12px;
@@ -250,6 +251,7 @@
       <div>
         <h1>O dia da família, num relance, à porta de casa.</h1>
         <p class="lede">Transforma um iPad antigo num painel de parede: uma agenda para a família toda, as atividades dos miúdos e o que vai em cada mochila, o tempo, o trânsito em tempo real e as fotos da família. Corre num PC em casa — até num iPad 2.</p>
+        <p class="aside">Aquele iPad 2 que há três anos fazia de pisa-papéis caríssimo na gaveta da cozinha? Voltou a ter emprego.</p>
         <div class="cta">
           <a class="btn primary" href="#install">Instalar</a>
           <a class="btn ghost" href="https://github.com/fmrgcarvalho/familydesk">Ver o código</a>
@@ -258,6 +260,7 @@
           <li>Gratuito e open source</li>
           <li>Os dados ficam na tua rede</li>
           <li>Funciona no iOS 9</li>
+          <li>Em português e inglês</li>
         </ul>
       </div>
 
@@ -407,6 +410,7 @@
         <table>
           <thead><tr><th scope="col">Opção</th><th scope="col">Para que serve</th></tr></thead>
           <tbody>
+            <tr><td><code>idioma</code></td><td>Língua de toda a interface e do calendário subscrito: <code>"en"</code> (por omissão) ou <code>"pt"</code>.</td></tr>
             <tr><td><code>local</code></td><td>Onde vives, para a meteorologia.</td></tr>
             <tr><td><code>calendarios</code></td><td>Links ICS da agenda (iCloud, Outlook…) e as cores de cada um.</td></tr>
             <tr><td><code>transito.tomtomChave</code></td><td>Chave gratuita da TomTom para o trânsito em tempo real. Sem ela, os tempos vêm do OSRM, sem trânsito.</td></tr>
@@ -448,7 +452,7 @@ npm install</code></pre><button class="copy" type="button">Copiar</button></div>
 
     <section id="status" aria-labelledby="e-title">
       <h2 id="e-title">Estado do projeto</h2>
-      <p class="sub">Feito para a entrada de uma casa a sério e usado todos os dias. A interface está em português e o calendário escolar é o de Portugal.</p>
+      <p class="sub">Feito para a entrada de uma casa a sério e usado todos os dias. A interface existe em português e em inglês (basta uma opção, <code>idioma</code>); os feriados e o calendário escolar são os de Portugal.</p>
       <div class="status">
         <div>
           <h3>Disponível</h3>
@@ -458,6 +462,7 @@ npm install</code></pre><button class="copy" type="button">Copiar</button></div>
             <li><strong>Página de gestão</strong> com PIN</li>
             <li><strong>Trânsito em tempo real</strong>, <strong>fotos</strong>, <strong>prazos da casa</strong></li>
             <li>Painel de <strong>finanças</strong> opcional, escondido por omissão</li>
+            <li>Interface em <strong>português</strong> e <strong>inglês</strong></li>
           </ul>
         </div>
         <div>
@@ -466,7 +471,7 @@ npm install</code></pre><button class="copy" type="button">Copiar</button></div>
             <li>Ementas da escola</li>
             <li>Lista de compras partilhada</li>
             <li>“Sair até às…” de manhã</li>
-            <li>Outras línguas e calendários escolares</li>
+            <li>Mais línguas e calendários escolares de outros países</li>
           </ul>
         </div>
       </div>
