@@ -1,0 +1,20 @@
+{
+  "name": "FamilyDesk",
+  "short_name": "FamilyDesk",
+  "start_url": "/iphone",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": [
+    {
+      "src": "/icone.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

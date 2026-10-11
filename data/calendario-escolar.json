@@ -1,0 +1,44 @@
+{
+  "_nota": "Calendários escolares. Entradas sem 'calendario' são o calendário nacional de Portugal continental (despacho). Entradas com 'calendario' são de um agrupamento e substituem o nacional nesse ano letivo. Acrescentar um novo ano quando sair o despacho / o calendário da escola (normalmente em junho/julho). Calendários de agrupamentos específicos podem ficar em data/calendario-escolar.local.json (fora do git), com o mesmo formato.",
+  "calendarios": {},
+  "anos": [
+    {
+      "anoLetivo": "2026/27",
+      "inicio": {
+        "pre": "2026-09-11",
+        "1ciclo": "2026-09-11",
+        "2ciclo": "2026-09-11",
+        "3ciclo": "2026-09-11",
+        "9ano": "2026-09-11",
+        "10ano": "2026-09-21",
+        "secundario": "2026-09-21"
+      },
+      "interrupcoes": [
+        {
+          "nome": "Férias de Natal",
+          "inicio": "2026-12-16",
+          "fim": "2026-12-31"
+        },
+        {
+          "nome": "Férias de Carnaval",
+          "inicio": "2027-02-08",
+          "fim": "2027-02-10"
+        },
+        {
+          "nome": "Férias da Páscoa",
+          "inicio": "2027-03-22",
+          "fim": "2027-04-02"
+        }
+      ],
+      "fim": {
+        "pre": "2027-06-30",
+        "1ciclo": "2027-06-30",
+        "2ciclo": "2027-06-11",
+        "3ciclo": "2027-06-11",
+        "9ano": "2027-06-04",
+        "10ano": "2027-06-11",
+        "secundario": "2027-06-04"
+      }
+    }
+  ]
+}

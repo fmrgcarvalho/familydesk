@@ -1,0 +1,396 @@
+/* Pensado para iPad 2 (1024x768, Safari 9): só flexbox, sem grid, sem variáveis CSS, sem "gap". */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #0d1117;
+  color: #e6edf3;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  overflow: hidden;
+}
+
+#ecra {
+  height: 100%;
+  box-sizing: border-box;
+  padding: 12px 18px 8px;
+  display: -webkit-flex; display: flex;
+  -webkit-flex-direction: column; flex-direction: column;
+  -webkit-transition: opacity 2s; transition: opacity 2s;
+}
+#ecra > * { -webkit-flex: none; flex: none; }
+
+.linha { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
+.cresce { -webkit-flex: 1; flex: 1; }
+
+.chip {
+  display: inline-block;
+  font-size: 12px;
+  line-height: 16px;
+  padding: 0 6px;
+  border: 1px solid #484f58;
+  border-radius: 9px;
+  margin-left: 6px;
+  vertical-align: 2px;
+  white-space: nowrap;
+}
+
+/* ---------- Topo: relógio + tempo atual ---------- */
+
+#hora { font-size: 86px; font-weight: 200; line-height: 1; letter-spacing: -3px; }
+#ss { font-size: 26px; color: #6e7681; margin-left: 6px; letter-spacing: 0; }
+#data { font-size: 21px; color: #9da7b3; margin-top: 2px; font-weight: 300; }
+#data b { color: #e6edf3; font-weight: 400; }
+
+#agora-icone { font-size: 54px; line-height: 1; margin-right: 8px; }
+#agora-temp { font-size: 62px; font-weight: 200; line-height: 1; margin-right: 16px; }
+#agora-desc { font-size: 18px; margin-bottom: 2px; }
+#agora-desc small { color: #8b949e; font-size: 14px; margin-left: 4px; }
+#agora-desc .ag-sol { font-size: 14px; color: #c9d1d9; margin-top: 3px; white-space: pre; }
+#agora-desc .ag-local { font-size: 12px; color: #6e7681; margin-top: 2px; white-space: nowrap; }
+
+/* ---------- Frase do dia (entre o relógio e o tempo) ---------- */
+#frase { padding: 0 18px; text-align: center; color: #c9d1d9; min-width: 0; }
+#frase .t {
+  font-size: 15px; font-style: italic; font-weight: 300; line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+#frase .a { font-size: 12px; color: #6e7681; margin-top: 4px; }
+
+/* ---------- Avisos IPMA + dicas ---------- */
+
+#alertas { margin-top: 8px; min-height: 0; }
+#alertas:empty { display: none; }
+.alerta {
+  display: inline-block;
+  font-size: 13px;
+  padding: 3px 9px;
+  margin: 0 5px 0 0;
+  border-radius: 13px;
+  background: #21262d;
+  color: #e6edf3;
+}
+.alerta.yellow { background: #d29922; color: #111; }
+.alerta.orange { background: #f0883e; color: #111; }
+.alerta.red { background: #f85149; color: #fff; }
+
+/* ---------- Próximas horas ---------- */
+
+/* Próximas horas (esquerda) e 5 dias (direita) numa só faixa; tocar amplia com todo o detalhe */
+#faixa-tempo { margin-top: 8px; padding: 5px 6px 3px; -webkit-align-items: stretch; align-items: stretch; }
+#horas { -webkit-flex: 1.3; flex: 1.3; }
+.hr { -webkit-flex: 1; flex: 1; text-align: center; }
+.hr .h { font-size: 12px; color: #8b949e; }
+.hr .i { font-size: 19px; line-height: 24px; }
+.hr .t { font-size: 15px; }
+.hr .c { font-size: 10px; color: #58a6ff; height: 12px; }
+.hr.mais { display: none; }
+
+/* ---------- Previsão 5 dias ---------- */
+
+#previsao { -webkit-flex: 1; flex: 1; border-left: 1px solid #30363d; margin-left: 6px; padding-left: 6px; }
+.dia-prev { -webkit-flex: 1; flex: 1; text-align: center; border-radius: 8px; padding: 0 2px; }
+.dia-prev.hoje { background: #1f2a3a; }
+.dia-prev .nome { font-size: 12px; color: #9da7b3; }
+.dia-prev .icone { display: block; font-size: 19px; line-height: 24px; }
+.dia-prev .meio { font-size: 15px; }
+.dia-prev .min { color: #6e7681; margin-left: 3px; }
+.dia-prev .chuva { font-size: 10px; color: #58a6ff; height: 12px; }
+.dia-prev .extra { display: none; font-size: 11px; color: #8b949e; }
+
+/* ---------- Painéis ---------- */
+
+#principal {
+  -webkit-flex: 1 !important; flex: 1 !important;
+  -webkit-align-items: stretch; align-items: stretch;
+  min-height: 0;
+}
+.painel {
+  background: #161b22;
+  border-radius: 12px;
+  padding: 10px 14px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.painel h2 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #6e7681;
+}
+#col-esq {
+  -webkit-flex: 1.25; flex: 1.25; margin-right: 10px; min-width: 0;
+  display: -webkit-flex; display: flex;
+  -webkit-flex-direction: column; flex-direction: column;
+}
+#col-agenda {
+  -webkit-flex: 1; flex: 1; min-height: 0;
+  display: -webkit-flex; display: flex;
+  -webkit-flex-direction: column; flex-direction: column;
+}
+#col-agenda h2 { -webkit-flex: none; flex: none; }
+#agenda { -webkit-flex: 0 1 auto; flex: 0 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+#agenda::-webkit-scrollbar { display: none; }
+#agenda { padding-bottom: 40px; } /* o botão ☰ fica no canto, por cima do fim da agenda */
+
+/* Fotos a passar na zona da agenda: ocupam o espaço que sobra (pelo menos 150 px) */
+/* fotos a passar no espaço livre da coluna da direita */
+#agenda-foto { display: none; position: relative; -webkit-flex: 1 1 auto; flex: 1 1 auto; min-height: 120px; margin-top: 10px; border-radius: 12px; overflow: hidden; background: #0d1117; cursor: pointer; }
+#agenda-foto.ativo { display: block; }
+.afoto {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background-size: cover; background-position: center; background-repeat: no-repeat;
+  opacity: 0; -webkit-transition: opacity 1.5s; transition: opacity 1.5s;
+}
+.afoto.visivel { opacity: 1; }
+.afoto { background-position: center 35%; }   /* as caras costumam estar na parte de cima */
+.afoto.alto { background-size: contain; background-position: center; }
+body.ver-financas #agenda-foto { display: none !important; }
+/* foto em ecrã inteiro (tocar na foto ou no botão Fotos) */
+#agenda-foto.expandido { padding: 0 !important; background: #000; overflow: hidden !important; }
+#agenda-foto.expandido > * { zoom: 1; }
+#agenda-foto.expandido .afoto { background-size: contain; }
+#col-lado {
+  -webkit-flex: 1; flex: 1; min-width: 0; /* linhas compridas não alargam a coluna para fora do ecrã */
+  display: -webkit-flex; display: flex;
+  -webkit-flex-direction: column; flex-direction: column;
+}
+#painel-atividades { -webkit-flex: 0 1 auto; flex: 0 1 auto; min-height: 0; }
+#painel-mochila { display: none; -webkit-flex: none; flex: none; margin-top: 10px; }
+#painel-mochila.ativo { display: block; }
+#mochila-quando { letter-spacing: 0; text-transform: none; font-weight: 400; color: #8b949e; }
+.mo { font-size: 15px; padding: 2px 0; }
+.mo .chip { margin: 0 8px 0 0; }
+.mo .it { color: #d29922; }
+/* faixa do tempo compacta: ícone e temperatura na mesma linha (a vista ampliada fica como estava) */
+#faixa-tempo:not(.expandido) .hr .i, #faixa-tempo:not(.expandido) .dia-prev .icone { display: inline-block; font-size: 16px; line-height: 20px; margin-right: 3px; vertical-align: middle; }
+#faixa-tempo:not(.expandido) .hr .t, #faixa-tempo:not(.expandido) .dia-prev .meio { display: inline-block; vertical-align: middle; }
+#faixa-tempo:not(.expandido) .hr .c, #faixa-tempo:not(.expandido) .dia-prev .chuva { height: auto; }
+#faixa-tempo:not(.expandido) .hr .h, #faixa-tempo:not(.expandido) .dia-prev .nome { font-size: 11px; }
+/* trânsito e datas da escola ficam encostados ao fundo da coluna */
+#col-baixo { margin-top: auto; padding-top: 10px; -webkit-flex: none; flex: none; }
+#datas-escola { font-size: 13px; color: #8b949e; padding: 8px 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#datas-escola:empty { display: none; }
+#datas-escola b { color: #c9d1d9; font-weight: 500; }
+
+/* Agenda */
+.ag-dia { font-size: 14px; color: #9da7b3; margin: 7px 0 2px; font-weight: 600; }
+.ag-dia:first-child { margin-top: 0; }
+.ag-dia.hoje { color: #58a6ff; }
+.ag-dia.atrasado { color: #f85149; }
+.ev.aniv .barra { background: #f778ba; }
+.ev.aniv.hoje .t { color: #f778ba; font-weight: 600; }
+.ev.prazo .barra { background: #8b949e; }
+.ev.prazo.breve .barra { background: #d29922; }
+.ev.prazo.breve .l { color: #d29922; }
+.ev.prazo.atrasado .barra { background: #f85149; }
+.ev.prazo.atrasado .t, .ev.prazo.atrasado .l { color: #f85149; font-weight: 600; }
+.ev {
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: baseline; align-items: baseline;
+  font-size: 17px;
+  padding: 2px 0;
+}
+.ev .barra { width: 4px; -webkit-align-self: stretch; align-self: stretch; border-radius: 2px; margin-right: 9px; -webkit-flex: none; flex: none; }
+.ev .h { width: 50px; color: #9da7b3; font-size: 15px; -webkit-flex: none; flex: none; }
+.ev .t { -webkit-flex: 1; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ev .l { color: #6e7681; font-size: 13px; margin-left: 8px; white-space: nowrap; max-width: 28%; overflow: hidden; text-overflow: ellipsis; }
+.vazio { color: #6e7681; font-size: 15px; font-style: italic; }
+
+/* Atividades */
+.at-dia { font-size: 14px; color: #9da7b3; margin: 6px 0 1px; font-weight: 600; }
+.at-dia:first-child { margin-top: 0; }
+.at-dia.hoje { color: #3fb950; }
+.at { font-size: 16px; padding: 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.at .h { display: inline-block; width: 48px; color: #9da7b3; font-size: 14px; }
+.at .lv { margin-left: 10px; font-size: 13px; color: #d29922; }
+.at .qd { margin-left: 10px; font-size: 13px; color: #58a6ff; }
+.at-pausa { font-size: 13px; color: #a371f7; padding: 2px 0 0 48px; }
+
+/* Aniversários */
+
+/* ---------- Barra de menu em baixo ---------- */
+#menu {
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  margin-top: 8px; padding: 3px 6px;
+  background: #161b22; border-radius: 12px;
+  position: relative; z-index: 9;
+  padding-left: 56px;
+}
+/* o menu está escondido; o botão ☰ no canto mostra-o (e esconde-se sozinho passado um bocado) */
+#menu { display: none; }
+body.menu-aberto #menu { display: -webkit-flex; display: flex; }
+#btn-menu {
+  position: fixed; left: 22px; bottom: 14px; z-index: 10;
+  width: 40px; height: 40px; line-height: 40px; text-align: center;
+  font-size: 20px; color: #6e7681; background: rgba(22, 27, 34, 0.85);
+  border: 1px solid #30363d; border-radius: 20px; cursor: pointer;
+}
+body.menu-aberto #btn-menu { color: #58a6ff; border-color: #1f6feb; }
+body.fotos #btn-menu, body.noite #btn-menu { display: none; }
+.mb {
+  -webkit-flex: 1; flex: 1;
+  text-align: center; font-size: 18px; line-height: 1.1;
+  color: #9da7b3; padding: 3px 0; border-radius: 8px;
+  cursor: pointer; text-decoration: none;
+}
+.mb i { display: block; font-style: normal; font-size: 10px; letter-spacing: 0.3px; margin-top: 1px; }
+.mb.ativo { background: #1f2a3a; color: #58a6ff; }
+.mb.oculto { display: none; }
+#estado { -webkit-flex: none; flex: none; padding: 0 10px; font-size: 10px; color: #484f58; }
+#estado.erro { color: #f85149; }
+
+/* ---------- Trânsito ---------- */
+#painel-transito { display: none; -webkit-flex: none; flex: none; padding-top: 8px; padding-bottom: 8px; }
+#painel-transito h2 { margin-bottom: 3px; }
+#painel-transito.ativo { display: block; }
+#transito-info { float: right; font-size: 11px; letter-spacing: 0; text-transform: none; font-weight: 400; color: #6e7681; }
+#transito-info .sem-tr { color: #d29922; margin-right: 8px; }
+.tr {
+  display: -webkit-flex; display: flex; -webkit-align-items: baseline; align-items: baseline;
+  border-left: 3px solid #30363d; padding: 2px 0 2px 9px; margin: 3px 0; white-space: nowrap;
+}
+.tr.ok { border-left-color: #3fb950; }
+.tr.lento { border-left-color: #f0883e; }
+.tr.mau { border-left-color: #f85149; }
+.tr.sem-dados { border-left-color: #484f58; }
+.tr-extra { display: none; }
+.expandido .tr-extra { display: -webkit-flex; display: flex; }
+.tr-nome { width: 42%; font-size: 15px; color: #c9d1d9; overflow: hidden; text-overflow: ellipsis; }
+.tr-min { width: 92px; font-size: 13px; color: #8b949e; }
+.tr-min b { font-size: 19px; font-weight: 600; color: #e6edf3; }
+.tr.ok .tr-min b { color: #3fb950; }
+.tr.lento .tr-min b { color: #f0883e; }
+.tr.mau .tr-min b { color: #f85149; }
+.tr-min .atr { color: #f85149; font-weight: 600; }
+.tr-sub { -webkit-flex: 1; flex: 1; font-size: 12px; color: #6e7681; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- Contagens (feriados / férias) e motivo de pausa ---------- */
+.at-dia .motivo { font-weight: 400; color: #a371f7; }
+
+/* ---------- Modo noite com fotos ---------- */
+#fotos { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #000; z-index: 10; cursor: pointer; }
+body.fotos #fotos { display: block; }
+.foto {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background-size: contain; background-position: center; background-repeat: no-repeat;
+  opacity: 0;
+  -webkit-transition: opacity 2s; transition: opacity 2s;
+}
+.foto.visivel { opacity: 0.85; }
+#fotos-relogio { position: absolute; left: 24px; bottom: 18px; color: #fff; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9); font-size: 64px; font-weight: 200; line-height: 1; opacity: 0.85; }
+#fotos-data { display: block; font-size: 20px; font-weight: 300; margin-top: 6px; }
+
+/* ---------- Noite: ecrã mais escuro ---------- */
+body.noite #ecra { opacity: 0.45; }
+
+/* ---------- Retrato (768x1024) ---------- */
+@media (orientation: portrait) {
+  #topo { -webkit-flex-direction: column; flex-direction: column; -webkit-align-items: flex-start; align-items: flex-start; }
+  #agora { margin-top: 8px; }
+  #principal { -webkit-flex-direction: column; flex-direction: column; }
+  #col-esq { margin: 0 0 10px; }
+  #col-lado { -webkit-flex: none; flex: none; }
+}
+
+/* ---------- Finanças (escondido por omissão) ---------- */
+#painel-financas { display: none; -webkit-flex: 1; flex: 1; }
+body.ver-financas #painel-atividades, body.ver-financas #painel-mochila { display: none !important; }
+body.ver-financas #painel-financas { display: block; }
+#fin-fechar { float: right; font-size: 12px; letter-spacing: 0; text-transform: none; color: #8b949e; cursor: pointer; padding: 0 0 8px 12px; }
+
+.fin-total { font-size: 15px; color: #9da7b3; }
+.fin-total b { display: block; font-size: 38px; font-weight: 300; color: #e6edf3; line-height: 1.15; }
+.fin-conta, .fin-pag { display: -webkit-flex; display: flex; font-size: 16px; padding: 3px 0; border-bottom: 1px solid #21262d; }
+.fin-conta span:first-child, .fin-pag .d { -webkit-flex: 1; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fin-conta small { color: #6e7681; font-size: 12px; margin-left: 6px; }
+.fin-pag .q { color: #9da7b3; font-size: 14px; width: 70px; -webkit-flex: none; flex: none; }
+.fin-pag .d { margin-right: 10px; }
+.fin-pag.breve .q { color: #d29922; }
+.fin-sub { font-size: 13px; color: #6e7681; text-transform: uppercase; letter-spacing: 1px; margin: 10px 0 2px; }
+.neg { color: #f85149; }
+.at.escola { color: #c9d1d9; }
+
+/* ---------- Painel expandido (tocar para ampliar, tocar outra vez para voltar) ---------- */
+body.menu-aberto .expandido { bottom: 62px !important; }
+body.menu-aberto .expandido:after { bottom: 68px; }
+.painel, #previsao { cursor: pointer; }
+.expandido {
+  position: fixed !important;
+  top: 12px; left: 18px; right: 18px; bottom: 12px;
+  z-index: 8;
+  margin: 0 !important;
+  display: block !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  background: #161b22;
+  border-radius: 16px;
+  padding: 18px 26px 30px !important;
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.7);
+  -webkit-animation: abrir-painel 0.22s ease-out;
+  animation: abrir-painel 0.22s ease-out;
+}
+.expandido > * { zoom: 1.45; }
+.expandido:after {
+  content: 'toca para voltar';
+  position: fixed; right: 80px; bottom: 26px;
+  font-size: 12px; color: #6e7681;
+}
+#faixa-tempo.expandido > #horas, #faixa-tempo.expandido > #previsao {
+  display: -webkit-flex !important; display: flex !important;
+  border: 0; margin: 10px 0 26px; padding: 0;
+}
+#faixa-tempo.expandido .hr.mais { display: block; }
+#faixa-tempo.expandido > #previsao { display: none !important; }
+#faixa-tempo.expandido .dia-prev { padding: 6px 4px; }
+#faixa-tempo.expandido .dia-prev .extra { display: block; }
+#painel-financas.expandido { display: block !important; }
+
+@-webkit-keyframes abrir-painel { from { opacity: 0; -webkit-transform: scale(0.94); } to { opacity: 1; -webkit-transform: scale(1); } }
+@keyframes abrir-painel { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+.det-exp { display: none; }
+.expandido .det-exp { display: inline; color: #8b949e; font-size: 0.85em; }
+.expandido .dia-prev .det-exp { display: block; margin-top: 4px; font-size: 12px; line-height: 1.5; }
+.tr-logo { width: 15px; height: 15px; vertical-align: -3px; border-radius: 3px; }
+
+/* ---------- Meteorologia ampliada: agora + resumo da semana + 7 dias ---------- */
+#tempo-det { display: none; }
+#faixa-tempo.expandido > #tempo-det { display: block; zoom: 1; }
+#faixa-tempo.expandido > #horas { zoom: 1.25; margin: 4px 0 14px; }
+.td-agora { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; margin-bottom: 12px; }
+.td-ic { font-size: 44px; margin-right: 10px; }
+.td-temp { font-size: 46px; font-weight: 200; margin-right: 18px; }
+.td-info { font-size: 15px; color: #9da7b3; line-height: 1.5; }
+.td-info b { color: #e6edf3; font-weight: 500; }
+.td-titulo { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: #6e7681; margin: 4px 0 4px; }
+.td-resumo { font-size: 14px; color: #c9d1d9; background: #0d1117; border-radius: 8px; padding: 7px 12px; margin-bottom: 6px; }
+.dl {
+  display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
+  padding: 6px 8px; border-bottom: 1px solid #21262d; font-size: 16px;
+}
+.dl.hoje { background: #1f2a3a; border-radius: 8px; }
+.dl small { display: block; font-size: 11px; color: #8b949e; }
+.dl-dia { width: 92px; }
+.dl-ic { width: 40px; font-size: 26px; text-align: center; }
+.dl-desc { width: 170px; padding-left: 6px; white-space: nowrap; overflow: hidden; }
+.dl-chuva { width: 90px; color: #8b949e; }
+.dl-chuva.forte { color: #58a6ff; }
+.dl-temp { -webkit-flex: 1; flex: 1; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; padding: 0 10px; }
+.dl-min { width: 34px; text-align: right; color: #8b949e; }
+.dl-max { width: 34px; font-weight: 600; }
+.dl-barra { -webkit-flex: 1; flex: 1; height: 6px; margin: 0 8px; background: #21262d; border-radius: 3px; position: relative; }
+.dl-ench { position: absolute; top: 0; bottom: 0; border-radius: 3px; background: #58a6ff; background: -webkit-linear-gradient(left, #58a6ff, #d29922); background: linear-gradient(90deg, #58a6ff, #d29922); }
+.dl-vento { width: 92px; }
+.dl-uv { width: 70px; }
+.dl-sol { width: 76px; font-size: 14px; }
+
+/* ---------- Ecrãs pequenos (iPad 2, 1024x768): as atividades passam para a linha de baixo em vez de ficarem cortadas ---------- */
+@media (max-width: 1200px) {
+  .at { white-space: normal; }
+  .at .lv, .at .qd { white-space: nowrap; }
+}

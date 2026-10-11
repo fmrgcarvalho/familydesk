@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FamilyDesk — o painel da família à porta de casa</title>
+<meta name="description" content="Transforma um iPad antigo num painel da família à porta de casa: agenda, atividades dos miúdos, o que levar, tempo, trânsito em tempo real e fotos. Gratuito, open source, corre na rede de casa.">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="alternate" hreflang="en" href="https://fmrgcarvalho.github.io/familydesk/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EDF0F2;
+    --surface: #FFFFFF;
+    --ink: #17202B;
+    --muted: #556170;
+    --line: #D3D9DF;
+    --act: #0F7C7A;       /* ações e links */
+    --act-ink: #FFFFFF;
+    --code-bg: #17202B;
+    --code-ink: #E6EBF0;
+    --display: "Bricolage Grotesque", system-ui, sans-serif;
+    --body: "Atkinson Hyperlegible", system-ui, sans-serif;
+    --mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #11171E; --surface: #19212A; --ink: #E6EBF0; --muted: #9AA6B2; --line: #2B3540;
+      --act: #3FC1BE; --act-ink: #0B1A1A; --code-bg: #0C1116; --code-ink: #E6EBF0;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11171E; --surface: #19212A; --ink: #E6EBF0; --muted: #9AA6B2; --line: #2B3540;
+    --act: #3FC1BE; --act-ink: #0B1A1A; --code-bg: #0C1116; --code-ink: #E6EBF0;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 18px/1.6 var(--body); }
+  a { color: var(--act); text-underline-offset: 3px; }
+  :focus-visible { outline: 3px solid var(--act); outline-offset: 3px; border-radius: 6px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  code { font: 0.9em var(--mono); }
+
+  /* ---------- header ---------- */
+  .top { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 700 20px/1 var(--display); color: var(--ink); text-decoration: none; }
+  .brand svg { width: 28px; height: 28px; }
+  .top nav { display: flex; gap: 22px; font-size: 16px; }
+  .top nav a { color: var(--muted); text-decoration: none; }
+  .top nav a:hover { color: var(--ink); }
+
+  /* ---------- hero ---------- */
+  .hero { display: grid; grid-template-columns: 0.9fr 1.15fr; gap: 56px; align-items: center; padding: 48px 0 88px; }
+  h1 {
+    font: 800 clamp(42px, 6vw, 72px)/0.98 var(--display);
+    letter-spacing: -0.035em; margin: 0 0 24px;
+    font-variation-settings: "opsz" 96;
+  }
+  .hero > * { min-width: 0; } /* a miniatura não pode alargar a página nos telemóveis */
+  .lede { font-size: 21px; color: var(--muted); max-width: 30em; margin: 0 0 32px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 12px;
+    font: 700 17px/1 var(--body); text-decoration: none; border: 2px solid var(--act);
+  }
+  .btn.primary { background: var(--act); color: var(--act-ink); }
+  .btn.ghost { color: var(--act); }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 28px 0 0; padding: 0; list-style: none; color: var(--muted); font-size: 16px; }
+  .facts li::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--act); margin-right: 9px; vertical-align: 2px; }
+
+  /* ---------- demo: miniatura do painel real (paleta escura fixa, como no iPad) ---------- */
+  .ipad {
+    background: #1B1F24; border-radius: 26px; padding: 18px; position: relative;
+    box-shadow: 0 30px 60px -30px rgba(23, 32, 43, .55), inset 0 0 0 2px #2C333B;
+  }
+  .ipad::before { content: ""; position: absolute; left: 7px; top: 50%; width: 5px; height: 5px; margin-top: -2px; border-radius: 50%; background: #333B44; }
+  .dash {
+    aspect-ratio: 4 / 3; background: #0D1117; color: #E6EBF0; border-radius: 8px; overflow: hidden; position: relative;
+    font: 400 clamp(7px, 1.05vw, 11.5px)/1.35 system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding: 2.2% 2.2% 1.6%; display: flex; flex-direction: column; gap: 1.6%;
+  }
+  .d-top { display: flex; align-items: center; gap: 3%; }
+  .d-clock { font-size: 4.3em; font-weight: 200; line-height: .95; letter-spacing: -.04em; }
+  .d-clock small { font-size: .3em; color: #6E7681; margin-left: .2em; letter-spacing: 0; }
+  .d-date { font-size: 1.2em; color: #9DA7B3; font-weight: 300; }
+  .d-quote { flex: 1; min-width: 0; text-align: center; font-style: italic; color: #C9D1D9; font-size: 1.05em; padding: 0 2%; }
+  .d-quote small { display: block; font-style: normal; color: #6E7681; font-size: .8em; margin-top: .3em; }
+  .d-now { display: flex; align-items: center; gap: .5em; white-space: nowrap; }
+  .d-now .ic { font-size: 2.6em; }
+  .d-now .t { font-size: 3.2em; font-weight: 200; }
+  .d-now .x { font-size: .95em; line-height: 1.4; }
+  .d-now .x span { color: #8B949E; }
+  .d-strip { display: flex; background: #161B22; border-radius: 6px; padding: .5em .4em; text-align: center; }
+  .d-strip > div { flex: 1; font-size: .95em; min-width: 0; white-space: nowrap; overflow: hidden; }
+  .d-strip > div span { display: block; color: #8B949E; font-size: .85em; }
+  .d-strip .sep { flex: none; width: 1px; background: #30363D; margin: 0 .3em; }
+  .d-strip .hoje { background: #1F2A3A; border-radius: 5px; }
+  .d-main { flex: 1; display: flex; gap: 1.4%; min-height: 0; }
+  .d-col { display: flex; flex-direction: column; gap: 2.2%; min-width: 0; }
+  .d-col.l { flex: 1.25; }
+  .d-col.r { flex: 1; }
+  .d-p { background: #161B22; border-radius: 6px; padding: .7em .9em; overflow: hidden; }
+  .d-col.l .d-p { flex: 1; }
+  .d-h { font-size: .8em; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #6E7681; margin-bottom: .35em; }
+  .d-day { font-weight: 600; color: #9DA7B3; margin-top: .45em; font-size: .92em; }
+  .d-ev { display: flex; align-items: center; gap: .5em; white-space: nowrap; }
+  .d-ev i { width: 3px; align-self: stretch; border-radius: 2px; flex: none; }
+  .d-ev b { font-weight: 400; color: #9DA7B3; width: 2.9em; flex: none; }
+  .chip { display: inline-block; font-size: .78em; line-height: 1.35; padding: 0 .45em; border: 1px solid; border-radius: 9px; margin-left: .35em; }
+  .d-act { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .d-act b { font-weight: 400; color: #9DA7B3; display: inline-block; width: 2.9em; }
+  .d-act .q { color: #58A6FF; font-size: .85em; margin-left: .5em; }
+  .d-act .lv { color: #D29922; font-size: .85em; margin-left: .5em; }
+  .d-pack { display: none; }
+  .d-pack.on { display: block; }
+  .d-pack .it { color: #D29922; }
+  .d-photo {
+    flex: 1; border-radius: 6px; min-height: 0;
+    background:
+      radial-gradient(circle at 72% 30%, #FFD58A 0 7%, transparent 7.5%),
+      linear-gradient(180deg, #5FA8D3 0 48%, #E9C98B 48% 60%, #3E7CB1 60% 100%);
+  }
+  .d-tr { display: flex; align-items: baseline; border-left: 3px solid #3FB950; padding: .05em 0 .05em .6em; margin: .25em 0; white-space: nowrap; }
+  .d-tr .n { width: 46%; overflow: hidden; text-overflow: ellipsis; color: #C9D1D9; }
+  .d-tr .m { width: 28%; color: #8B949E; font-size: .9em; }
+  .d-tr .m strong { font-size: 1.3em; color: #3FB950; }
+  .d-tr .m em { font-style: normal; color: #F85149; font-weight: 600; }
+  .d-tr .c { color: #6E7681; font-size: .85em; }
+  .d-tr.lento { border-left-color: #F0883E; } .d-tr.lento .m strong { color: #F0883E; }
+  .d-tr.mau { border-left-color: #F85149; } .d-tr.mau .m strong { color: #F85149; }
+  .d-dates { font-size: .82em; color: #8B949E; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 .3em; }
+  .d-night {
+    position: absolute; inset: 0; display: flex; align-items: flex-end; padding: 4%;
+    background:
+      radial-gradient(circle at 70% 28%, #FFE3A3 0 5%, transparent 5.5%),
+      linear-gradient(180deg, #2B4A6F 0 50%, #1B2F45 50% 100%);
+    opacity: 0; transition: opacity .6s ease; pointer-events: none;
+  }
+  .d-night.on { opacity: 1; }
+  .d-night div { font-size: 4.5em; font-weight: 200; line-height: 1; color: #FFFFFF; text-shadow: 0 2px 12px rgba(0,0,0,.5); }
+  .d-night div small { display: block; font-size: .28em; font-weight: 300; margin-top: .3em; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 26px; }
+  .switch { display: inline-flex; align-items: center; gap: 10px; font-size: 16px; cursor: pointer; }
+  .switch input { appearance: none; -webkit-appearance: none; margin: 0; width: 42px; height: 24px; border-radius: 999px; background: var(--line); position: relative; cursor: pointer; transition: background .15s; flex: none; }
+  .switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--surface); transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+  .switch input:checked { background: var(--act); }
+  .switch input:checked::after { transform: translateX(18px); }
+  .hint { font-size: 15px; color: var(--muted); margin: 10px 0 0; }
+
+  /* ---------- sections ---------- */
+  section { padding: 84px 0; border-top: 1px solid var(--line); }
+  h2 { font: 800 clamp(30px, 3.6vw, 44px)/1.08 var(--display); letter-spacing: -0.025em; margin: 0 0 14px; max-width: 18em; }
+  .sub { color: var(--muted); max-width: 36em; margin: 0 0 40px; font-size: 19px; }
+  h3 { font: 700 21px/1.25 var(--display); margin: 0 0 6px; }
+
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px 44px; }
+  .features p { margin: 0; color: var(--muted); font-size: 17px; }
+  .features .opt { font-size: 13px; font-weight: 700; color: var(--act); border: 1.5px solid currentColor; border-radius: 6px; padding: 1px 7px; margin-left: 8px; vertical-align: 3px; font-family: var(--body); }
+
+  .flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 18px; align-items: center; }
+  .flow .box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; }
+  .flow .box p { margin: 0; color: var(--muted); font-size: 16px; }
+  .flow .box ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 16px; }
+  .flow .arrow { font: 800 28px/1 var(--display); color: var(--act); }
+  .flow-note { color: var(--muted); font-size: 16px; max-width: 46em; margin: 28px 0 0; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 17px; }
+  th, td { text-align: left; padding: 14px 16px 14px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font: 700 15px/1.3 var(--body); color: var(--muted); }
+  td:first-child { white-space: nowrap; }
+  .table-scroll { overflow-x: auto; }
+
+  .steps { counter-reset: s; list-style: none; margin: 0; padding: 0; max-width: 760px; }
+  .steps li { counter-increment: s; position: relative; padding: 0 0 34px 58px; }
+  .steps li::before {
+    content: counter(s); position: absolute; left: 0; top: -2px; width: 38px; height: 38px; border-radius: 50%;
+    display: grid; place-items: center; font: 800 18px/1 var(--display); background: var(--ink); color: var(--bg);
+  }
+  .steps p { margin: 0 0 12px; color: var(--muted); }
+  .code { position: relative; }
+  pre {
+    margin: 0; background: var(--code-bg); color: var(--code-ink); border-radius: 12px; padding: 16px 18px; padding-right: 92px;
+    font: 15px/1.6 var(--mono); overflow-x: auto;
+  }
+  .copy {
+    position: absolute; top: 10px; right: 10px; padding: 7px 12px; border-radius: 8px; border: 1px solid #3A4654;
+    background: #222C38; color: #E6EBF0; font: 700 14px/1 var(--body); cursor: pointer;
+  }
+
+  .status { display: grid; grid-template-columns: 1fr 1fr; gap: 44px; }
+  .status ul { margin: 0; padding-left: 20px; color: var(--muted); }
+  .status li { margin-bottom: 8px; }
+  .status li strong { color: var(--ink); font-weight: 700; }
+
+  footer { padding: 44px 0 64px; border-top: 1px solid var(--line); color: var(--muted); font-size: 15px; }
+  footer p { margin: 0 0 8px; max-width: 60em; }
+  .author { display: flex; align-items: center; gap: 14px; padding-bottom: 22px; margin-bottom: 22px; border-bottom: 1px solid var(--line); }
+  .author-mark {
+    flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--ink); color: var(--bg); font: 800 15px/1 var(--display); letter-spacing: -0.02em;
+  }
+  .author p { margin: 0; }
+  .author strong { color: var(--ink); font-weight: 700; }
+  .author-links { display: inline-flex; flex-wrap: wrap; gap: 4px 16px; }
+
+  @media (max-width: 920px) {
+    .hero { grid-template-columns: 1fr; gap: 40px; padding-top: 24px; }
+    .features { grid-template-columns: 1fr 1fr; }
+    .flow { grid-template-columns: 1fr; }
+    .flow .arrow { transform: rotate(90deg); justify-self: center; }
+    .status { grid-template-columns: 1fr; gap: 28px; }
+  }
+  @media (max-width: 600px) {
+    body { font-size: 17px; }
+    .wrap { padding: 0 16px; }
+    .top nav { display: none; }
+    .features { grid-template-columns: 1fr; }
+    section { padding: 60px 0; }
+    .lede { font-size: 19px; }
+    .ipad { padding: 10px; border-radius: 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="15" fill="#17202B"/><path d="M12.5 30.5 32 14l19.5 16.5" fill="none" stroke="#38BDF8" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/><rect x="18" y="28" width="28" height="23" rx="4.5" fill="none" stroke="#38BDF8" stroke-width="3.4"/><rect x="22.6" y="32.4" width="8.4" height="6.6" rx="1.8" fill="#38BDF8"/><rect x="33" y="32.4" width="8.4" height="6.6" rx="1.8" fill="#F0883E"/><rect x="22.6" y="40.6" width="8.4" height="6.6" rx="1.8" fill="#3FB950"/><rect x="33" y="40.6" width="8.4" height="6.6" rx="1.8" fill="#F778BA"/></svg>
+      FamilyDesk
+    </a>
+    <nav aria-label="Secções">
+      <a href="#features">Funcionalidades</a>
+      <a href="#how">Como funciona</a>
+      <a href="#install">Instalar</a>
+      <a href="https://github.com/fmrgcarvalho/familydesk">GitHub</a>
+      <a href="../" hreflang="en" lang="en">English</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div>
+        <h1>O dia da família, num relance, à porta de casa.</h1>
+        <p class="lede">Transforma um iPad antigo num painel de parede: uma agenda para a família toda, as atividades dos miúdos e o que vai em cada mochila, o tempo, o trânsito em tempo real e as fotos da família. Corre num PC em casa — até num iPad 2.</p>
+        <div class="cta">
+          <a class="btn primary" href="#install">Instalar</a>
+          <a class="btn ghost" href="https://github.com/fmrgcarvalho/familydesk">Ver o código</a>
+        </div>
+        <ul class="facts">
+          <li>Gratuito e open source</li>
+          <li>Os dados ficam na tua rede</li>
+          <li>Funciona no iOS 9</li>
+        </ul>
+      </div>
+
+      <div aria-label="Pré-visualização interativa do painel">
+        <div class="ipad">
+          <div class="dash" id="dash">
+            <div class="d-top">
+              <div>
+                <div class="d-clock"><span id="dClock">08:14</span><small id="dSec">05</small></div>
+                <div class="d-date" id="dDate">Segunda, 12 de outubro</div>
+              </div>
+              <div class="d-quote">“Pequenos passos todos os dias fazem grandes coisas.”<small>— frase do dia</small></div>
+              <div class="d-now"><span class="ic">⛅️</span><span class="t">19°</span><span class="x">Pouco nublado <span>24° / 15°</span><br><span>🌅 07:42 🌇 19:01</span></span></div>
+            </div>
+            <div class="d-strip">
+              <div><span>Agora</span>⛅️ 19°</div><div><span>10h</span>☀️ 21°</div><div><span>12h</span>☀️ 23°</div><div><span>14h</span>☀️ 24°</div><div><span>16h</span>⛅️ 23°</div>
+              <div class="sep"></div>
+              <div class="hoje"><span>Hoje</span>24° 15°</div><div><span>Ter</span>22° 14°</div><div><span>Qua</span>🌧 19° 13°</div><div><span>Qui</span>21° 13°</div>
+            </div>
+            <div class="d-main">
+              <div class="d-col l">
+                <div class="d-p">
+                  <div class="d-h">Agenda</div>
+                  <div class="d-day" style="color:#58A6FF">Hoje</div>
+                  <div class="d-ev"><i style="background:#FF9F43"></i><b>09:30</b>Reunião de equipa</div>
+                  <div class="d-ev"><i style="background:#58A6FF"></i><b>17:00</b>🩺 Pediatra<span class="chip" style="color:#58A6FF">João</span></div>
+                  <div class="d-day">Quinta, 15 out</div>
+                  <div class="d-ev"><i style="background:#F778BA"></i><b>🎂</b>Avó Ana (70)</div>
+                  <div class="d-ev"><i style="background:#D29922"></i><b>🚗</b>Inspeção do carro</div>
+                  <div class="d-day">Sábado, 17 out</div>
+                  <div class="d-ev"><i style="background:#3FB950"></i><b>dia</b>🏫 Visita de estudo<span class="chip" style="color:#3FB950">Rita</span></div>
+                  <div class="d-ev"><i style="background:#FF9F43"></i><b>20:00</b>Jantar com amigos</div>
+                </div>
+              </div>
+              <div class="d-col r">
+                <div class="d-p">
+                  <div class="d-h">Atividades</div>
+                  <div class="d-act"><b>09:00</b>🏫 Escola até 15:30<span class="chip" style="color:#F778BA">Maria</span></div>
+                  <div class="d-act"><b>17:30</b>Futebol<span class="chip" style="color:#58A6FF">João</span><span class="q">hoje e qui</span><span class="lv">🎒 chuteiras</span></div>
+                  <div class="d-act"><b>18:00</b>Natação<span class="chip" style="color:#F778BA">Maria</span><span class="q">qua</span><span class="lv">🎒 fato de banho, touca</span></div>
+                </div>
+                <div class="d-p d-pack" id="dPack">
+                  <div class="d-h">🎒 Não esquecer · amanhã</div>
+                  <div><span class="chip" style="color:#F778BA;margin:0 .5em 0 0">Maria</span><span class="it">fato de banho, touca, fato de treino</span></div>
+                  <div><span class="chip" style="color:#3FB950;margin:0 .5em 0 0">Rita</span><span class="it">lanche</span></div>
+                </div>
+                <div class="d-photo" aria-hidden="true"></div>
+                <div class="d-p">
+                  <div class="d-h">Trânsito</div>
+                  <div class="d-tr" id="t1"><span class="n">🏢 Escritório</span><span class="m"><strong>18</strong> min</span><span class="c">chega 08:32</span></div>
+                  <div class="d-tr" id="t2"><span class="n">🏫 Escola</span><span class="m"><strong>6</strong> min</span><span class="c">chega 08:20</span></div>
+                </div>
+                <div class="d-dates">🇵🇹 Feriado em 19 dias · 🎄 Férias de Natal em 69 dias</div>
+              </div>
+            </div>
+            <div class="d-night" id="dNight" aria-hidden="true"><div><span id="nClock">23:40</span><small>Segunda, 12 de outubro</small></div></div>
+          </div>
+        </div>
+        <div class="controls">
+          <label class="switch"><input type="checkbox" id="evening"> Fim do dia</label>
+          <label class="switch"><input type="checkbox" id="rush"> Hora de ponta</label>
+          <label class="switch"><input type="checkbox" id="night"> Noite</label>
+        </div>
+        <p class="hint">Dados de exemplo. Ao fim do dia, a lista da mochila passa para amanhã; à noite, o ecrã mostra as fotos da família com um relógio.</p>
+      </div>
+    </div>
+
+    <section id="features" aria-labelledby="f-title">
+      <h2 id="f-title">Tudo o que a família precisa antes de sair de casa</h2>
+      <p class="sub">Feito para se ler do outro lado do corredor em dois segundos, e gerido a partir do telemóvel.</p>
+      <div class="features">
+        <div>
+          <h3>Uma só agenda</h3>
+          <p>Calendários do iCloud e do Outlook, consultas dos miúdos, aniversários e prazos da casa (inspeção, seguros, Cartão de Cidadão) numa só lista para os próximos 30 dias.</p>
+        </div>
+        <div>
+          <h3>A semana dos miúdos</h3>
+          <p>Horário da escola e atividades da semana, uma linha cada, com os dias e o que levar. As atividades fazem pausa sozinhas nas férias e feriados.</p>
+        </div>
+        <div>
+          <h3>“Não esquecer”</h3>
+          <p>Tudo o que vai na mochila de cada filho, juntado a partir do horário e das atividades. A partir das 18h mostra a lista de amanhã.</p>
+        </div>
+        <div>
+          <h3>O tempo que interessa</h3>
+          <p>Agora, as próximas horas e a semana, com UV, vento, qualidade do ar, pólen, nascer e pôr do sol. Os avisos do IPMA só aparecem quando os há.</p>
+        </div>
+        <div>
+          <h3>Trânsito em tempo real <span class="opt">opcional</span></h3>
+          <p>Minutos de casa até ao trabalho e à escola, a verde, laranja ou vermelho, com os destinos do dia: trabalho nos dias úteis, família ao fim de semana.</p>
+        </div>
+        <div>
+          <h3>Fotos da família</h3>
+          <p>As fotos de uma pasta ocupam o espaço livre durante o dia e o ecrã inteiro à noite. As fotos HEIC do iPhone são convertidas sozinhas.</p>
+        </div>
+        <div>
+          <h3>Gerido a partir do telemóvel</h3>
+          <p>Uma página web para acrescentar atividades, aniversários, prazos e destinos, protegida por PIN. Sem apps para instalar.</p>
+        </div>
+        <div>
+          <h3>Um calendário para cada iPhone</h3>
+          <p>Atividades, dias de escola, aniversários e prazos são publicados num calendário que cada pessoa da família pode subscrever.</p>
+        </div>
+        <div>
+          <h3>Calendário escolar incluído</h3>
+          <p>Feriados nacionais (incluindo a Páscoa) e o calendário escolar nacional, com contagem para as próximas férias. O feriado municipal é uma linha de configuração.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" aria-labelledby="h-title">
+      <h2 id="h-title">Como funciona</h2>
+      <p class="sub">Um pequeno servidor Node.js num PC em casa faz o trabalho todo. O iPad só tem de mostrar uma página.</p>
+      <div class="flow">
+        <div class="box">
+          <h3>Fontes</h3>
+          <ul>
+            <li>Calendários (links ICS)</li>
+            <li>Open-Meteo e IPMA</li>
+            <li>TomTom ou OSRM</li>
+            <li>Uma pasta de fotos</li>
+          </ul>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="box">
+          <h3>Servidor em casa</h3>
+          <p>O <code>server.js</code> vai buscar tudo, guarda os dados da família num ficheiro JSON local e entrega tudo ao iPad num só pedido.</p>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="box">
+          <h3>Ecrãs</h3>
+          <ul>
+            <li>iPad na parede</li>
+            <li>Página para iPhone</li>
+            <li><code>/gerir</code> para gerir</li>
+            <li>Calendário subscrito</li>
+          </ul>
+        </div>
+      </div>
+      <p class="flow-note">O iPad 2 ficou no iOS 9, que não tem <code>fetch</code>, nem CSS Grid, e tem certificados desatualizados. Por isso a página do painel está escrita em ES5, só com flexbox, e é o servidor que faz todos os pedidos para fora. A página recarrega-se sozinha quando o servidor ou os ficheiros mudam.</p>
+    </section>
+
+    <section id="config" aria-labelledby="c-title">
+      <h2 id="c-title">Tudo num ficheiro de configuração</h2>
+      <p class="sub">Não há nada pessoal no código. Chaves, links e preferências ficam no <code>config.json</code>; os dados da família ficam em <code>data/familia.json</code>. O git ignora os dois.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th scope="col">Opção</th><th scope="col">Para que serve</th></tr></thead>
+          <tbody>
+            <tr><td><code>local</code></td><td>Onde vives, para a meteorologia.</td></tr>
+            <tr><td><code>calendarios</code></td><td>Links ICS da agenda (iCloud, Outlook…) e as cores de cada um.</td></tr>
+            <tr><td><code>transito.tomtomChave</code></td><td>Chave gratuita da TomTom para o trânsito em tempo real. Sem ela, os tempos vêm do OSRM, sem trânsito.</td></tr>
+            <tr><td><code>agendaFotos</code> · <code>modoNoite</code></td><td>Pasta das fotos, de quanto em quanto tempo mudam e o horário da noite.</td></tr>
+            <tr><td><code>pinGestao</code></td><td>PIN pedido para gravar alterações na página de gestão.</td></tr>
+            <tr><td><code>diasAgenda</code> · <code>feriadoMunicipal</code></td><td>Dias mostrados na agenda; o feriado do teu concelho.</td></tr>
+            <tr><td><code>ecra</code></td><td>Afinações: intervalo de atualização, quando os painéis fecham, a hora a que o “Não esquecer” passa para amanhã.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="install" aria-labelledby="i-title">
+      <h2 id="i-title">Instalar</h2>
+      <p class="sub">Precisas de um PC, Raspberry Pi ou NAS sempre ligado em casa, com <a href="https://nodejs.org">Node.js 18 ou mais recente</a>, e de um iPad ou outro tablet no mesmo Wi-Fi.</p>
+      <ol class="steps">
+        <li>
+          <h3>Obter o código</h3>
+          <div class="code"><pre><code>git clone https://github.com/fmrgcarvalho/familydesk.git
+cd familydesk
+npm install</code></pre><button class="copy" type="button">Copiar</button></div>
+        </li>
+        <li>
+          <h3>Criar a configuração</h3>
+          <p>Copia o exemplo e preenche a tua localização e os links dos calendários. O resto é opcional.</p>
+          <div class="code"><pre><code>cp config.example.json config.json</code></pre><button class="copy" type="button">Copiar</button></div>
+        </li>
+        <li>
+          <h3>Arrancar o servidor</h3>
+          <p>O terminal mostra os endereços para o iPad e para a página de gestão. No Windows, o <code>arrancar.cmd</code> mantém-no a correr e pode arrancar quando inicias sessão.</p>
+          <div class="code"><pre><code>npm start</code></pre><button class="copy" type="button">Copiar</button></div>
+        </li>
+        <li>
+          <h3>Pôr na parede</h3>
+          <p>No iPad, abre o endereço no Safari, escolhe Partilhar → Adicionar ao ecrã principal, põe o Bloqueio automático em Nunca e liga o Acesso guiado.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="status" aria-labelledby="e-title">
+      <h2 id="e-title">Estado do projeto</h2>
+      <p class="sub">Feito para a entrada de uma casa a sério e usado todos os dias. A interface está em português e o calendário escolar é o de Portugal.</p>
+      <div class="status">
+        <div>
+          <h3>Disponível</h3>
+          <ul>
+            <li><strong>Painel</strong> para iPad 2 e mais recentes, com modo noite</li>
+            <li><strong>Página para iPhone</strong> e <strong>calendário subscrito</strong></li>
+            <li><strong>Página de gestão</strong> com PIN</li>
+            <li><strong>Trânsito em tempo real</strong>, <strong>fotos</strong>, <strong>prazos da casa</strong></li>
+            <li>Painel de <strong>finanças</strong> opcional, escondido por omissão</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Ideias para mais tarde</h3>
+          <ul>
+            <li>Ementas da escola</li>
+            <li>Lista de compras partilhada</li>
+            <li>“Sair até às…” de manhã</li>
+            <li>Outras línguas e calendários escolares</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="author">
+      <span class="author-mark" aria-hidden="true">FC</span>
+      <p>Feito por <strong>Fábio Carvalho</strong>, Tech Lead &amp; .NET Architect.
+        <span class="author-links"><a href="https://fmrgcarvalho.github.io/" target="_blank" rel="noopener">Site pessoal</a><a href="https://www.linkedin.com/in/fmrgcarvalho" target="_blank" rel="noopener">LinkedIn</a><a href="https://github.com/fmrgcarvalho" target="_blank" rel="noopener">GitHub</a></span></p>
+    </div>
+    <p>O FamilyDesk é gratuito e open source, com a <a href="https://github.com/fmrgcarvalho/familydesk/blob/main/LICENSE">licença MIT</a>. Código em <a href="https://github.com/fmrgcarvalho/familydesk">github.com/fmrgcarvalho/familydesk</a>.</p>
+    <p>Dados do Open-Meteo, IPMA, TomTom, OSRM/OpenStreetMap e ZenQuotes. Bibliotecas: node-ical, sharp, heic-convert.</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2, "0");
+
+  // O relógio da miniatura segue a hora real; os dados de exemplo ficam fixos.
+  function tick() {
+    const d = new Date();
+    $("dClock").textContent = pad(d.getHours()) + ":" + pad(d.getMinutes());
+    $("dSec").textContent = pad(d.getSeconds());
+    $("nClock").textContent = $("dClock").textContent;
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  $("evening").addEventListener("change", e => $("dPack").classList.toggle("on", e.target.checked));
+  $("night").addEventListener("change", e => $("dNight").classList.toggle("on", e.target.checked));
+  $("rush").addEventListener("change", e => {
+    const on = e.target.checked;
+    $("t1").className = "d-tr" + (on ? " mau" : "");
+    $("t1").querySelector(".m").innerHTML = on ? "<strong>31</strong> min <em>+13</em>" : "<strong>18</strong> min";
+    $("t1").querySelector(".c").textContent = on ? "chega 08:45" : "chega 08:32";
+    $("t2").className = "d-tr" + (on ? " lento" : "");
+    $("t2").querySelector(".m").innerHTML = on ? "<strong>9</strong> min" : "<strong>6</strong> min";
+  });
+
+  // Botões para copiar os comandos.
+  document.querySelectorAll(".copy").forEach(btn => btn.addEventListener("click", async () => {
+    const code = btn.previousElementSibling.innerText;
+    try { await navigator.clipboard.writeText(code); btn.textContent = "Copiado"; }
+    catch { btn.textContent = "Seleciona e copia"; }
+    setTimeout(() => btn.textContent = "Copiar", 1600);
+  }));
+})();
+</script>
+</body>
+</html>

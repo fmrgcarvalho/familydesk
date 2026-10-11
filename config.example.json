@@ -1,0 +1,63 @@
+{
+  "porta": 3000,
+  "fusoHorario": "Europe/Lisbon",
+  "local": {
+    "nome": "Lisboa",
+    "latitude": 38.72,
+    "longitude": -9.14
+  },
+  "ipmaArea": "LSB",
+  "feriadoMunicipal": {
+    "nome": "Santo António",
+    "data": "06-13"
+  },
+  "diasAgenda": 30,
+  "diasAniversarios": 30,
+  "diasContagemFamilia": 120,
+  "pinGestao": "",
+  "calendarios": [
+    {
+      "nome": "Outlook",
+      "cor": "#4aa3ff",
+      "url": "COLA_AQUI_o_link_ICS_do_Outlook"
+    },
+    {
+      "nome": "iPhone",
+      "cor": "#ff9f43",
+      "url": "COLA_AQUI_o_link_webcal_do_iCloud"
+    }
+  ],
+  "modoNoite": {
+    "inicio": "22:00",
+    "fim": "07:00",
+    "intervaloSegundos": 60,
+    "fotos": {
+      "pasta": "",
+      "googleDrive": {
+        "pastaId": "",
+        "contaServico": "google-service-account.json"
+      }
+    }
+  },
+  "transito": {
+    "tomtomChave": "",
+    "intervaloMinutos": 5,
+    "horaInicio": "06:00",
+    "horaFim": "23:00"
+  },
+  "agendaFotos": {
+    "pasta": "",
+    "intervaloSegundos": 10
+  },
+  "ecra": {
+    "atualizarMinutos": 2,
+    "recarregarHoras": 6,
+    "fecharPainelSegundos": 60,
+    "fecharFotoMinutos": 10,
+    "fecharMenuSegundos": 20,
+    "financasSegundos": 60,
+    "acordadoNoiteMinutos": 2,
+    "mochilaAmanhaAPartirDas": 18,
+    "datasEscolaMax": 3
+  }
+}

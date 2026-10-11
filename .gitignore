@@ -1,0 +1,8 @@
+node_modules/
+config.json
+data/familia.json
+cache/
+google-service-account.json
+*.log
+data/calendario-escolar.local.json
+data/logos/

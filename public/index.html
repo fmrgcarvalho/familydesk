@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="FamilyDesk">
+<title>FamilyDesk</title>
+<script>
+  // telemóveis vão para a versão iPhone (o iPad 2 tem 768 px de largura, fica aqui); #ipad força esta versão
+  if (screen.width < 700 && location.hash !== '#ipad') location.replace('/iphone');
+</script>
+<link rel="apple-touch-icon" href="icone.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="ecra">
+  <div id="topo" class="linha">
+    <div id="relogio">
+      <div id="hora"><span id="hh">--:--</span><span id="ss"></span></div>
+      <div id="data">&nbsp;</div>
+    </div>
+    <div id="frase" class="cresce"></div>
+    <div id="agora" class="linha">
+      <div id="agora-icone"></div>
+      <div id="agora-temp"></div>
+      <div id="agora-info">
+        <div id="agora-desc"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="alertas"></div>
+  <div id="faixa-tempo" class="painel linha">
+    <div id="horas" class="linha"></div>
+    <div id="previsao" class="linha"></div>
+    <div id="tempo-det"></div>
+  </div>
+
+  <div id="principal" class="linha">
+    <div id="col-esq">
+      <div id="col-agenda" class="painel">
+        <h2>Agenda</h2>
+        <div id="agenda"></div>
+      </div>
+    </div>
+    <div id="col-lado">
+      <div class="painel" id="painel-atividades">
+        <h2>Atividades</h2>
+        <div id="atividades"></div>
+      </div>
+      <div class="painel" id="painel-mochila">
+        <h2>🎒 Não esquecer <span id="mochila-quando"></span></h2>
+        <div id="mochila"></div>
+      </div>
+      <div class="painel" id="painel-financas">
+        <h2>Finanças <span id="fin-fechar">esconder ✕</span></h2>
+        <div id="financas"></div>
+      </div>
+      <div id="agenda-foto"><div id="afoto0" class="afoto"></div><div id="afoto1" class="afoto"></div></div>
+      <div id="col-baixo">
+        <div id="painel-transito" class="painel">
+          <h2>Trânsito <span id="transito-info"></span></h2>
+          <div id="transito"></div>
+        </div>
+        <div id="datas-escola"></div>
+      </div>
+    </div>
+  </div>
+  <div id="menu">
+    <span class="mb" data-alvo="col-agenda">📅<i>Agenda</i></span>
+    <span class="mb" data-alvo="painel-atividades">🎒<i>Atividades</i></span>
+    <span class="mb" data-alvo="faixa-tempo">⛅️<i>Tempo</i></span>
+    <span class="mb" data-alvo="painel-transito">🚗<i>Trânsito</i></span>
+    <span class="mb" data-alvo="agenda-foto">📷<i>Fotos</i></span>
+    <span class="mb oculto" id="btn-fin">💶<i>Finanças</i></span>
+    <a class="mb" id="mb-gerir" href="/gerir">✏️<i>Gerir</i></a>
+    <span id="estado"></span>
+    <span class="mb" id="mb-atualizar">🔄<i>Atualizar</i></span>
+  </div>
+  <div id="btn-menu">☰</div>
+  <div id="fotos">
+    <div id="foto0" class="foto"></div>
+    <div id="foto1" class="foto"></div>
+    <div id="fotos-relogio"><span id="fotos-hora"></span><span id="fotos-data"></span></div>
+  </div>
+</div>
+<script src="comum.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

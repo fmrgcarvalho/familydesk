@@ -1,0 +1,348 @@
+{
+  "filhos": [
+    {
+      "nome": "Maria",
+      "cor": "#f778ba",
+      "nivel": "2ciclo",
+      "calendario": "nacional"
+    },
+    {
+      "nome": "João",
+      "cor": "#58a6ff",
+      "nivel": "1ciclo",
+      "calendario": "nacional"
+    },
+    {
+      "nome": "Rita",
+      "cor": "#3fb950",
+      "nivel": "pre",
+      "calendario": "nacional"
+    }
+  ],
+  "atividades": [
+    {
+      "id": "a1",
+      "quem": "Maria",
+      "atividade": "Natação",
+      "dia": "segunda",
+      "inicio": "18:00",
+      "fim": "19:00",
+      "local": "Piscina municipal",
+      "levar": "fato de banho, touca",
+      "pausaFerias": false
+    },
+    {
+      "id": "a2",
+      "quem": "João",
+      "atividade": "Futebol",
+      "dia": "segunda",
+      "inicio": "17:30",
+      "fim": "18:30",
+      "levar": "chuteiras, caneleiras"
+    },
+    {
+      "id": "a3",
+      "quem": "Rita",
+      "atividade": "Música",
+      "dia": "terça",
+      "inicio": "17:00",
+      "fim": "18:00"
+    },
+    {
+      "id": "a4",
+      "quem": "Maria",
+      "atividade": "Inglês",
+      "dia": "terça",
+      "inicio": "17:30",
+      "fim": "18:30"
+    },
+    {
+      "id": "a5",
+      "quem": "João",
+      "atividade": "Educação física",
+      "dia": "quarta",
+      "inicio": "10:00",
+      "levar": "fato de treino"
+    },
+    {
+      "id": "a6",
+      "quem": "Rita",
+      "atividade": "Ballet",
+      "dia": "quarta",
+      "inicio": "18:00",
+      "fim": "19:00",
+      "levar": "sapatilhas"
+    },
+    {
+      "id": "a7",
+      "quem": "João",
+      "atividade": "Futebol",
+      "dia": "quinta",
+      "inicio": "17:30",
+      "fim": "18:30",
+      "levar": "chuteiras, caneleiras"
+    },
+    {
+      "id": "a8",
+      "quem": "Maria",
+      "atividade": "Natação",
+      "dia": "sexta",
+      "inicio": "18:00",
+      "fim": "19:00",
+      "levar": "fato de banho, touca"
+    },
+    {
+      "id": "a9",
+      "quem": "Rita",
+      "atividade": "Ballet",
+      "dia": "sábado",
+      "inicio": "10:30",
+      "fim": "11:30",
+      "levar": "sapatilhas"
+    }
+  ],
+  "eventos": [
+    {
+      "id": "e1",
+      "quem": "João",
+      "tipo": "consulta",
+      "titulo": "Pediatra",
+      "data": "2026-10-13",
+      "inicio": "09:30",
+      "local": "Centro de saúde"
+    },
+    {
+      "id": "e2",
+      "quem": "Maria",
+      "tipo": "escola",
+      "titulo": "Visita de estudo",
+      "data": "2026-10-14",
+      "notas": "levar lanche"
+    },
+    {
+      "id": "e3",
+      "quem": "Rita",
+      "tipo": "consulta",
+      "titulo": "Dentista",
+      "data": "2026-10-15",
+      "inicio": "16:30",
+      "local": "Clínica"
+    },
+    {
+      "id": "e4",
+      "quem": "Todos",
+      "tipo": "evento",
+      "titulo": "Festa de anos da Inês",
+      "data": "2026-10-17",
+      "inicio": "15:00",
+      "fim": "18:00",
+      "local": "Parque"
+    }
+  ],
+  "aniversarios": [
+    {
+      "id": "n1",
+      "nome": "Inês",
+      "data": "10-14",
+      "ano": 2018,
+      "quem": "Maria"
+    },
+    {
+      "id": "n2",
+      "nome": "Tomás",
+      "data": "10-22",
+      "quem": "João"
+    },
+    {
+      "id": "n3",
+      "nome": "Leonor",
+      "data": "10-28",
+      "quem": "Rita"
+    },
+    {
+      "id": "n4",
+      "nome": "Duarte",
+      "data": "11-03",
+      "quem": "João"
+    }
+  ],
+  "mostrarFinancas": true,
+  "contas": [
+    {
+      "id": "c1",
+      "nome": "Conta à ordem",
+      "saldo": 2345.67,
+      "atualizado": "2026-10-11"
+    },
+    {
+      "id": "c2",
+      "nome": "Poupança",
+      "saldo": 8200,
+      "atualizado": "2026-10-01"
+    },
+    {
+      "id": "c3",
+      "nome": "Cartão de crédito",
+      "saldo": -312.4,
+      "atualizado": "2026-10-10"
+    }
+  ],
+  "pagamentos": [
+    {
+      "id": "p1",
+      "descricao": "Colégio",
+      "valor": 450,
+      "dia": 12
+    },
+    {
+      "id": "p2",
+      "descricao": "Luz e gás",
+      "valor": 96.3,
+      "dia": 15
+    },
+    {
+      "id": "p3",
+      "descricao": "Natação (3 filhos)",
+      "valor": 105,
+      "dia": 20
+    },
+    {
+      "id": "p4",
+      "descricao": "Renda",
+      "valor": 950,
+      "dia": 1
+    }
+  ],
+  "horarios": [
+    {
+      "id": "h1",
+      "quem": "João",
+      "escola": "Escola Básica",
+      "tempos": [
+        {
+          "inicio": "09:00",
+          "fim": "10:00"
+        },
+        {
+          "inicio": "10:00",
+          "fim": "11:00"
+        },
+        {
+          "inicio": "11:00",
+          "fim": "11:30",
+          "pausa": "Intervalo"
+        },
+        {
+          "inicio": "11:30",
+          "fim": "12:30"
+        },
+        {
+          "inicio": "12:30",
+          "fim": "13:00"
+        },
+        {
+          "inicio": "13:00",
+          "fim": "14:00",
+          "pausa": "Almoço"
+        },
+        {
+          "inicio": "14:00",
+          "fim": "15:30"
+        },
+        {
+          "inicio": "15:30",
+          "fim": "16:15",
+          "pausa": "Intervalo"
+        },
+        {
+          "inicio": "16:15",
+          "fim": "17:15",
+          "aec": true
+        }
+      ],
+      "aulas": {
+        "segunda": [
+          "Educação Física",
+          "Matemática",
+          null,
+          "Inglês",
+          "Educação Artística",
+          null,
+          "Português",
+          null,
+          "AFD"
+        ],
+        "terca": [
+          "Português",
+          "Português",
+          null,
+          "Matemática",
+          "Matemática",
+          null,
+          "Estudo do Meio",
+          null,
+          "Dança"
+        ],
+        "quarta": [
+          "Matemática",
+          "Matemática",
+          null,
+          "Oferta Complementar / Apoio ao Estudo",
+          "Educação Artística",
+          null,
+          "Inglês",
+          null,
+          "Música"
+        ],
+        "quinta": [
+          "Português",
+          "Educação Artística",
+          null,
+          "Matemática",
+          "Matemática",
+          null,
+          "Estudo do Meio",
+          null,
+          "AFD"
+        ],
+        "sexta": [
+          "Matemática",
+          "Português",
+          null,
+          "Português",
+          "Estudo do Meio",
+          null,
+          "Estudo do Meio",
+          null,
+          "Expressão Plástica"
+        ]
+      },
+      "levar": {
+        "Educação Física": "equipamento de Educação Física",
+        "AFD": "equipamento desportivo"
+      },
+      "notas": ""
+    }
+  ],
+  "casa": {
+    "nome": "Casa",
+    "lat": 38.7369,
+    "lng": -9.1427
+  },
+  "destinos": [
+    {
+      "id": "d1",
+      "nome": "Trabalho",
+      "icone": "🏢",
+      "lat": 38.7223,
+      "lng": -9.1393
+    },
+    {
+      "id": "d2",
+      "nome": "Escola",
+      "icone": "🏫",
+      "lat": 38.7436,
+      "lng": -9.1602
+    }
+  ]
+}

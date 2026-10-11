@@ -1,0 +1,15 @@
+{
+  "name": "familydesk",
+  "version": "0.1.0",
+  "description": "FamilyDesk: o painel da família à porta de casa (iPad, mesmo um iPad 2): agenda, atividades dos filhos, o que levar, tempo, trânsito e fotos.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "heic-convert": "^2.1.0",
+    "node-ical": "^0.27.3",
+    "sharp": "^0.35.5"
+  }
+}
